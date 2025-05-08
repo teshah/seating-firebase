@@ -3,16 +3,11 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect } from 'react';
-import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
+import type { SeatingChartData, Table as TableType } from '@/types/seating';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
-import { Search, Users, Info, Grid, List } from 'lucide-react';
+import { Search, Users, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-
-const flowerHints = ["rose", "tulip", "sunflower", "daisy", "lily", "orchid", "poppy", "lavender", "marigold", "peony"];
 
 interface SeatingChartDisplayProps {
   data: SeatingChartData;
@@ -21,9 +16,7 @@ interface SeatingChartDisplayProps {
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedGuestName, setHighlightedGuestName] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // New states for improved search and alert
   const [foundGuestsDetails, setFoundGuestsDetails] = useState<{ guestName: string, tableName: string }[]>([]);
   const [displayedTables, setDisplayedTables] = useState<TableType[]>(() => data.tables);
 
@@ -51,8 +44,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         }
       });
       if (tableHasMatch) {
-        // Add a copy of the table to avoid modifying the original data if needed later for other operations
-        // For now, direct reference is fine as we are just filtering.
         if (!tablesContainingMatchingGuests.some(t => t.id === table.id)) {
              tablesContainingMatchingGuests.push(table);
         }
@@ -60,14 +51,13 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     });
 
     if (newFoundGuestsDetails.length > 0) {
-      guestNameToHighlight = searchTerm; // Use search term for highlighting partial matches
+      guestNameToHighlight = searchTerm; 
       tablesToShow = tablesContainingMatchingGuests;
     } else {
-      // If no guests found by name, search tables by name
       tablesToShow = data.tables.filter(table =>
         table.name.toLowerCase().includes(lowerSearchTerm)
       );
-      guestNameToHighlight = null; // No guest to highlight if only table name matched
+      guestNameToHighlight = null; 
     }
 
     setDisplayedTables(tablesToShow);
@@ -94,33 +84,9 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             aria-label="Search seating chart"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={viewMode === 'grid' ? "default" : "outline"} size="icon" onClick={() => setViewMode('grid')} aria-label="Grid view">
-                  <Grid className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Grid View</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={viewMode === 'list' ? "default" : "outline"} size="icon" onClick={() => setViewMode('list')} aria-label="List view">
-                  <List className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>List View</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        {/* View mode toggle buttons removed */}
       </div>
 
-      {/* Alert for found guests */}
       {searchTerm && foundGuestsDetails.length > 0 && (
         <Alert variant="default" className="bg-accent/20 border-accent">
           <Users className="h-5 w-5 text-accent" />
@@ -148,7 +114,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         </Alert>
       )}
 
-      {/* Alert for no results */}
       {searchTerm && displayedTables.length === 0 && (
         <Alert variant="destructive">
           <Info className="h-5 w-5" />
@@ -159,81 +124,15 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         </Alert>
       )}
 
-      {displayedTables.length > 0 && viewMode === 'grid' && (
+      {displayedTables.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {displayedTables.map((table, index) => (
             <TableCard key={table.id} table={table} tableIndex={index} highlightedGuestName={highlightedGuestName} />
           ))}
         </div>
       )}
-      {displayedTables.length > 0 && viewMode === 'list' && (
-         <div className="space-y-4">
-          {displayedTables.map((table, tableIndex) => {
-            const guestRows: Guest[][] = [];
-            for (let i = 0; i < table.guests.length; i += 2) {
-              guestRows.push(table.guests.slice(i, i + 2));
-            }
-
-            return (
-              <Card key={table.id} className="shadow-md">
-                <CardHeader 
-                  className="relative flex flex-row items-center justify-between space-y-0 rounded-t-lg border-b border-border overflow-hidden h-24 p-0"
-                  data-ai-hint={flowerHints[tableIndex % flowerHints.length]}
-                >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center z-0"
-                    style={{ backgroundImage: `url(https://picsum.photos/400/100?random=${tableIndex})` }}
-                    aria-hidden="true"
-                  />
-                  <div className="absolute inset-0 bg-black/40 z-0" aria-hidden="true"/>
-                  <div className="relative z-10 flex items-center justify-between w-full px-6 py-3">
-                    <CardTitle className="text-xl font-semibold text-white">
-                      {table.name}
-                    </CardTitle>
-                    <span className="text-sm text-white flex items-center">
-                      <Users className="mr-1 h-4 w-4 text-white"/>
-                      {table.guests.length} Guests
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  {table.guests.length > 0 ? (
-                    <ul className="space-y-1">
-                      {guestRows.map((rowGuests, rowIndex) => (
-                        <li
-                          key={`guest-row-${table.id}-${rowIndex}`}
-                          className="flex items-center py-1.5 px-2 rounded hover:bg-accent/10 transition-colors duration-150 text-sm"
-                        >
-                          {rowGuests.map((guest, guestIndexInRow) => (
-                            <span
-                              key={guest.id}
-                              className={`
-                                ${rowGuests.length === 2 ? 'w-1/2' : 'w-full'}
-                                ${guestIndexInRow === 0 && rowGuests.length === 2 ? 'pr-2' : ''}
-                                ${guestIndexInRow === 1 && rowGuests.length === 2 ? 'pl-2' : ''}
-                                break-words
-                                ${highlightedGuestName && guest.name.toLowerCase().includes(highlightedGuestName.toLowerCase())
-                                  ? 'bg-accent text-accent-foreground rounded font-semibold px-1 py-0.5'
-                                  : 'text-foreground/90 px-1 py-0.5'
-                                }
-                              `}
-                            >
-                              {guest.name}
-                            </span>
-                          ))}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">No guests assigned to this table.</p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
+      
+      {/* List view rendering removed */}
 
       <footer className="mt-8 pt-4 border-t border-border text-center text-muted-foreground text-sm">
         <p>Total Tables: {data.tables.length} | Total Guests: {totalGuests}</p>
