@@ -10,7 +10,15 @@ interface TableCardProps {
   highlightedGuestName?: string | null; // Added for highlighting
 }
 
-const flowerHints = ["rose", "tulip", "sunflower", "daisy", "lily", "orchid", "poppy", "lavender", "marigold", "peony"];
+const sevenWondersHints = [
+  "pyramid giza", 
+  "hanging gardens babylon", 
+  "statue zeus olympia", 
+  "temple artemis ephesus", 
+  "mausoleum halicarnassus", 
+  "colossus rhodes", 
+  "lighthouse alexandria"
+];
 
 const TableCard: FC<TableCardProps> = ({ table, tableIndex, highlightedGuestName }) => {
   const guestRows: Guest[][] = [];
@@ -22,7 +30,7 @@ const TableCard: FC<TableCardProps> = ({ table, tableIndex, highlightedGuestName
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
       <CardHeader 
         className="relative flex flex-row items-center justify-between space-y-0 rounded-t-lg border-b border-border overflow-hidden h-24 p-0"
-        data-ai-hint={flowerHints[tableIndex % flowerHints.length]}
+        data-ai-hint={sevenWondersHints[tableIndex % sevenWondersHints.length]}
       >
         <div
           className="absolute inset-0 bg-cover bg-center z-0"
