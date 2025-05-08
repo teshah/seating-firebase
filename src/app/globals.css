@@ -8,8 +8,11 @@ body {
 
 @layer base {
   :root {
-    --background: 120 60% 95%; /* Very Light Green */
+    --background: 0 0% 97%; /* Neutral Very Light Gray */
     --foreground: 120 30% 25%; /* Dark Green */
+
+    --gradient-start-color: 50 70% 92%; /* Beige for light theme gradient */
+    --gradient-end-color: 200 70% 90%;   /* Sky Blue for light theme gradient */
 
     --card: 0 0% 100%; /* White */
     --card-foreground: 120 30% 25%; /* Dark Green */
@@ -33,7 +36,7 @@ body {
     --destructive-foreground: 0 0% 98%; /* White */
 
     --border: 120 40% 85%; /* Light Green Border */
-    --input: 120 40% 88%; /* Light Green Input Border */
+    --input: 0 0% 90%; /* Neutral Light Gray for input borders/switch bg */
     --ring: 330 75% 70%; /* Vibrant Light Pink for focus rings */
 
     --chart-1: 120 50% 55%; /* Green */
@@ -55,8 +58,11 @@ body {
   }
 
   .dark {
-    --background: 120 25% 10%; /* Very Dark Green */
+    --background: 0 0% 12%; /* Neutral Very Dark Gray */
     --foreground: 120 50% 90%; /* Light Greenish White */
+
+    --gradient-start-color: 50 15% 18%; /* Dark Beige for dark theme gradient */
+    --gradient-end-color: 200 20% 22%;   /* Dark Sky Blue for dark theme gradient */
 
     --card: 120 20% 15%; /* Darker Green Card */
     --card-foreground: 120 50% 90%; /* Light Greenish White */
@@ -80,7 +86,7 @@ body {
     --destructive-foreground: 0 0% 98%; /* White */
 
     --border: 120 20% 25%; /* Dark Green Border */
-    --input: 120 20% 28%; /* Dark Green Input Border */
+    --input: 0 0% 25%; /* Neutral Dark Gray for input borders/switch bg */
     --ring: 330 70% 75%; /* Brighter Pink */
 
     --chart-1: 120 50% 65%; /* Lighter Green */
@@ -106,6 +112,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    background-image: linear-gradient(to bottom right, hsl(var(--gradient-start-color)), hsl(var(--gradient-end-color)));
+    @apply text-foreground min-h-screen;
   }
 }
