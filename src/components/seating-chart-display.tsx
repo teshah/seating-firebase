@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FC } from 'react';
@@ -9,6 +10,7 @@ import { Search, Users, Info, Grid, List } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 
 interface SeatingChartDisplayProps {
@@ -186,3 +188,4 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
+
