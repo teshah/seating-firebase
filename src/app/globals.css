@@ -8,96 +8,96 @@ body {
 
 @layer base {
   :root {
-    --background: 150 40% 97%; /* Very Light Mint */
-    --foreground: 150 25% 15%; /* Dark Desaturated Mint */
+    --background: 120 60% 95%; /* Very Light Green */
+    --foreground: 120 30% 25%; /* Dark Green */
 
     --card: 0 0% 100%; /* White */
-    --card-foreground: 150 25% 15%; /* Dark Desaturated Mint */
+    --card-foreground: 120 30% 25%; /* Dark Green */
 
     --popover: 0 0% 100%; /* White */
-    --popover-foreground: 150 25% 15%; /* Dark Desaturated Mint */
+    --popover-foreground: 120 30% 25%; /* Dark Green */
 
-    --primary: 140 55% 45%; /* Rich Green */
+    --primary: 120 50% 60%; /* Medium Green */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 140 45% 92%; /* Pale Green */
-    --secondary-foreground: 140 55% 35%; /* Darker Rich Green for text on pale green */
+    --secondary: 330 70% 92%; /* Light Pink */
+    --secondary-foreground: 330 50% 35%; /* Darker Pink */
 
-    --muted: 150 30% 90%; /* Light Minty Gray */
-    --muted-foreground: 150 20% 50%; /* Medium Minty Gray */
+    --muted: 120 40% 90%; /* Lighter Muted Green */
+    --muted-foreground: 120 25% 45%; /* Medium Muted Green */
 
-    --accent: 330 75% 60%; /* Vibrant Pink */
+    --accent: 330 75% 70%; /* Vibrant Light Pink */
     --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 75% 55%; /* Standard Red */
+    --destructive-foreground: 0 0% 98%; /* White */
 
-    --border: 150 25% 88%; /* Light Minty Border */
-    --input: 150 25% 88%; /* Light Minty Input Border */
-    --ring: 330 75% 60%; /* Vibrant Pink for focus rings */
+    --border: 120 40% 85%; /* Light Green Border */
+    --input: 120 40% 88%; /* Light Green Input Border */
+    --ring: 330 75% 70%; /* Vibrant Light Pink for focus rings */
 
-    --chart-1: 140 50% 50%; /* Green */
-    --chart-2: 330 70% 65%; /* Pink */
-    --chart-3: 160 45% 40%; /* Bluish Green */
-    --chart-4: 340 60% 55%; /* Deeper Pink */
-    --chart-5: 180 30% 50%; /* Teal/Cyan */
+    --chart-1: 120 50% 55%; /* Green */
+    --chart-2: 330 70% 75%; /* Pink */
+    --chart-3: 120 40% 65%; /* Lighter Green */
+    --chart-4: 330 60% 85%; /* Lighter Pink */
+    --chart-5: 100 45% 60%; /* Lime Green */
     --radius: 0.5rem;
 
     /* Sidebar vars */
-    --sidebar-background: 150 35% 95%; /* Very Light Mint */
-    --sidebar-foreground: 150 25% 20%; /* Dark Desaturated Mint */
-    --sidebar-primary: 140 55% 40%; /* Primary Green (slightly darker) */
+    --sidebar-background: 120 50% 93%; /* Slightly different Light Green */
+    --sidebar-foreground: 120 30% 20%; /* Dark Green */
+    --sidebar-primary: 330 70% 65%; /* Prominent Pink */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 140 40% 88%; /* Lighter Pale Green */
-    --sidebar-accent-foreground: 140 55% 30%; /* Darker Green */
-    --sidebar-border: 150 20% 80%; /* Minty Border */
-    --sidebar-ring: 330 75% 60%; /* Pink (main accent) */
+    --sidebar-accent: 120 40% 88%; /* Lighter Green for hover */
+    --sidebar-accent-foreground: 120 30% 30%; /* Darker Green */
+    --sidebar-border: 120 35% 80%; /* Light Green Border */
+    --sidebar-ring: 330 75% 70%; /* Vibrant Light Pink */
   }
 
   .dark {
-    --background: 150 15% 8%; /* Very Dark Desaturated Mint */
-    --foreground: 150 25% 92%; /* Light Minty White */
+    --background: 120 25% 10%; /* Very Dark Green */
+    --foreground: 120 50% 90%; /* Light Greenish White */
 
-    --card: 150 15% 12%; /* Darker Desaturated Mint */
-    --card-foreground: 150 25% 92%; /* Light Minty White */
+    --card: 120 20% 15%; /* Darker Green Card */
+    --card-foreground: 120 50% 90%; /* Light Greenish White */
 
-    --popover: 150 15% 12%; /* Darker Desaturated Mint */
-    --popover-foreground: 150 25% 92%; /* Light Minty White */
+    --popover: 120 20% 15%; /* Darker Green Popover */
+    --popover-foreground: 120 50% 90%; /* Light Greenish White */
 
-    --primary: 140 60% 60%; /* Brighter Green */
-    --primary-foreground: 140 30% 10%; /* Very Dark Green */
+    --primary: 120 55% 70%; /* Brighter Green */
+    --primary-foreground: 120 30% 10%; /* Very Dark Green */
 
-    --secondary: 150 15% 18%; /* Dark Mint */
-    --secondary-foreground: 150 35% 80%; /* Lighter Mint */
+    --secondary: 330 40% 25%; /* Dark Muted Pink */
+    --secondary-foreground: 330 60% 85%; /* Light Pink */
 
-    --muted: 150 10% 22%; /* Darker Minty Gray */
-    --muted-foreground: 150 15% 65%; /* Medium-Light Minty Gray */
+    --muted: 120 20% 20%; /* Darker Muted Green */
+    --muted-foreground: 120 35% 65%; /* Medium-Light Greenish Gray */
 
-    --accent: 330 80% 70%; /* Brighter Pink */
-    --accent-foreground: 330 25% 10%; /* Very Dark Pink */
+    --accent: 330 70% 75%; /* Brighter Pink */
+    --accent-foreground: 330 30% 15%; /* Very Dark Pink */
 
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 65% 50%; /* Darker Red */
+    --destructive-foreground: 0 0% 98%; /* White */
 
-    --border: 150 10% 25%; /* Dark Minty Border */
-    --input: 150 10% 25%; /* Dark Minty Input Border */
-    --ring: 330 80% 70%; /* Brighter Pink */
+    --border: 120 20% 25%; /* Dark Green Border */
+    --input: 120 20% 28%; /* Dark Green Input Border */
+    --ring: 330 70% 75%; /* Brighter Pink */
 
-    --chart-1: 140 55% 65%; /* Lighter Green */
-    --chart-2: 330 75% 75%; /* Lighter Pink */
-    --chart-3: 160 50% 55%; /* Lighter Bluish Green */
-    --chart-4: 340 65% 70%; /* Lighter Deeper Pink */
-    --chart-5: 180 40% 60%; /* Lighter Teal/Cyan */
+    --chart-1: 120 50% 65%; /* Lighter Green */
+    --chart-2: 330 65% 75%; /* Lighter Pink */
+    --chart-3: 120 40% 75%; /* Even Lighter Green */
+    --chart-4: 330 55% 85%; /* Even Lighter Pink */
+    --chart-5: 100 40% 70%; /* Lighter Lime */
 
     /* Dark Sidebar vars */
-    --sidebar-background: 150 15% 10%; /* Dark Mint */
-    --sidebar-foreground: 150 25% 90%; /* Light Minty White */
-    --sidebar-primary: 140 60% 55%; /* Brighter Green */
-    --sidebar-primary-foreground: 140 30% 15%; /* Very Dark Green */
-    --sidebar-accent: 150 15% 20%; /* Darker Mint for hover */
-    --sidebar-accent-foreground: 150 35% 85%; /* Lighter Mint */
-    --sidebar-border: 150 10% 22%; /* Dark Minty Border */
-    --sidebar-ring: 330 80% 70%; /* Pink (main dark accent) */
+    --sidebar-background: 120 22% 12%; /* Slightly different Dark Green */
+    --sidebar-foreground: 120 45% 88%; /* Light Greenish White */
+    --sidebar-primary: 330 65% 70%; /* Prominent Pink */
+    --sidebar-primary-foreground: 330 30% 10%; /* Very Dark Pink */
+    --sidebar-accent: 120 25% 20%; /* Darker Green for hover */
+    --sidebar-accent-foreground: 120 40% 80%; /* Lighter Green */
+    --sidebar-border: 120 18% 22%; /* Darker Green Border */
+    --sidebar-ring: 330 65% 70%; /* Pink */
   }
 }
 
