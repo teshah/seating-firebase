@@ -152,29 +152,55 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       )}
       {filteredTablesAndGuests.tables.length > 0 && viewMode === 'list' && (
          <div className="space-y-4">
-          {filteredTablesAndGuests.tables.map((table) => (
-            <Card key={table.id} className="shadow-md">
-              <CardHeader className="bg-secondary/30 rounded-t-lg border-b">
-                <CardTitle className="text-xl font-semibold text-primary flex items-center justify-between">
-                  <span>{table.name}</span>
-                  <span className="text-sm text-muted-foreground flex items-center"><Users className="mr-1 h-4 w-4"/>{table.guests.length} Guests</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                {table.guests.length > 0 ? (
-                  <ul className="columns-1 sm:columns-2 md:columns-3 gap-x-6">
-                    {table.guests.map((guest) => (
-                      <li key={guest.id} className={`text-foreground/90 text-sm py-1 px-1 break-inside-avoid-column ${guest.name === highlightedGuestName ? 'bg-accent text-accent-foreground rounded font-semibold' : ''}`}>
-                        {guest.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">No guests assigned to this table.</p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {filteredTablesAndGuests.tables.map((table) => {
+            const guestRows: Guest[][] = [];
+            for (let i = 0; i < table.guests.length; i += 2) {
+              guestRows.push(table.guests.slice(i, i + 2));
+            }
+
+            return (
+              <Card key={table.id} className="shadow-md">
+                <CardHeader className="bg-secondary/30 rounded-t-lg border-b">
+                  <CardTitle className="text-xl font-semibold text-primary flex items-center justify-between">
+                    <span>{table.name}</span>
+                    <span className="text-sm text-muted-foreground flex items-center"><Users className="mr-1 h-4 w-4"/>{table.guests.length} Guests</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  {table.guests.length > 0 ? (
+                    <ul className="space-y-1">
+                      {guestRows.map((rowGuests, rowIndex) => (
+                        <li
+                          key={`guest-row-${table.id}-${rowIndex}`}
+                          className="flex items-center py-1.5 px-2 rounded hover:bg-accent/10 transition-colors duration-150 text-sm"
+                        >
+                          {rowGuests.map((guest, guestIndexInRow) => (
+                            <span
+                              key={guest.id}
+                              className={`
+                                ${rowGuests.length === 2 ? 'w-1/2' : 'w-full'}
+                                ${guestIndexInRow === 0 && rowGuests.length === 2 ? 'pr-2' : ''}
+                                ${guestIndexInRow === 1 && rowGuests.length === 2 ? 'pl-2' : ''}
+                                break-words
+                                ${guest.name === highlightedGuestName
+                                  ? 'bg-accent text-accent-foreground rounded font-semibold px-1 py-0.5'
+                                  : 'text-foreground/90 px-1 py-0.5'
+                                }
+                              `}
+                            >
+                              {guest.name}
+                            </span>
+                          ))}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No guests assigned to this table.</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -188,4 +214,3 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
-
