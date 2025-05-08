@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+const flowerHints = ["rose", "tulip", "sunflower", "daisy", "lily", "orchid", "poppy", "lavender", "marigold", "peony"];
 
 interface SeatingChartDisplayProps {
   data: SeatingChartData;
@@ -20,7 +21,7 @@ interface SeatingChartDisplayProps {
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedGuestName, setHighlightedGuestName] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); 
 
   const filteredTablesAndGuests = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -31,7 +32,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     let guestResult: { table: TableType, guest: Guest } | null = null;
 
-    // Prioritize finding an exact guest match
     for (const table of data.tables) {
       for (const guest of table.guests) {
         if (guest.name.toLowerCase() === lowerSearchTerm) {
@@ -42,12 +42,11 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       if (guestResult) break;
     }
     
-    // If no exact guest match, try partial guest match
     if (!guestResult) {
       for (const table of data.tables) {
         for (const guest of table.guests) {
           if (guest.name.toLowerCase().includes(lowerSearchTerm)) {
-            guestResult = { table, guest }; // Take the first partial match
+            guestResult = { table, guest }; 
             break;
           }
         }
@@ -57,11 +56,9 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
     if (guestResult) {
       setHighlightedGuestName(guestResult.guest.name);
-      // Return only the table where the guest was found
       return { tables: [guestResult.table], guestHighlight: guestResult.guest.name };
     }
 
-    // If no guest matches, filter by table name
     setHighlightedGuestName(null);
     const tablesByName = data.tables.filter(table =>
       table.name.toLowerCase().includes(lowerSearchTerm)
@@ -76,7 +73,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   }, [data.tables]);
 
 
-  // Effect to clear highlight when search term is empty
   useEffect(() => {
     if (!searchTerm.trim()) {
       setHighlightedGuestName(null);
@@ -145,14 +141,14 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
       {filteredTablesAndGuests.tables.length > 0 && viewMode === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredTablesAndGuests.tables.map((table) => (
-            <TableCard key={table.id} table={table} />
+          {filteredTablesAndGuests.tables.map((table, index) => (
+            <TableCard key={table.id} table={table} tableIndex={index} />
           ))}
         </div>
       )}
       {filteredTablesAndGuests.tables.length > 0 && viewMode === 'list' && (
          <div className="space-y-4">
-          {filteredTablesAndGuests.tables.map((table) => {
+          {filteredTablesAndGuests.tables.map((table, tableIndex) => {
             const guestRows: Guest[][] = [];
             for (let i = 0; i < table.guests.length; i += 2) {
               guestRows.push(table.guests.slice(i, i + 2));
@@ -160,11 +156,25 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
             return (
               <Card key={table.id} className="shadow-md">
-                <CardHeader className="bg-secondary/30 rounded-t-lg border-b">
-                  <CardTitle className="text-xl font-semibold text-primary flex items-center justify-between">
-                    <span>{table.name}</span>
-                    <span className="text-sm text-muted-foreground flex items-center"><Users className="mr-1 h-4 w-4"/>{table.guests.length} Guests</span>
-                  </CardTitle>
+                <CardHeader 
+                  className="relative flex flex-row items-center justify-between space-y-0 rounded-t-lg border-b border-border overflow-hidden h-24 p-0"
+                  data-ai-hint={flowerHints[tableIndex % flowerHints.length]}
+                >
+                  <div
+                    className="absolute inset-0 bg-cover bg-center z-0"
+                    style={{ backgroundImage: `url(https://picsum.photos/400/100?random=${tableIndex})` }}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute inset-0 bg-black/40 z-0" aria-hidden="true"/>
+                  <div className="relative z-10 flex items-center justify-between w-full px-6 py-3">
+                    <CardTitle className="text-xl font-semibold text-white">
+                      {table.name}
+                    </CardTitle>
+                    <span className="text-sm text-white flex items-center">
+                      <Users className="mr-1 h-4 w-4 text-white"/>
+                      {table.guests.length} Guests
+                    </span>
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-4">
                   {table.guests.length > 0 ? (
