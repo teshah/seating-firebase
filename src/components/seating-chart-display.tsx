@@ -7,7 +7,7 @@ import type { SeatingChartData, Table as TableType, Guest } from '@/types/seatin
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud } from 'lucide-react';
+import { Search, Users, Info, UploadCloud, DownloadCloud } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -131,10 +131,17 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       guestNameToHighlight = searchTerm; 
       tablesToShow = tablesContainingMatchingGuests;
     } else {
-      tablesToShow = currentSeatingData.tables.filter(table =>
+      // If no guests match, check if table names match
+       tablesToShow = currentSeatingData.tables.filter(table =>
         table.name.toLowerCase().includes(lowerSearchTerm)
       );
-      guestNameToHighlight = null; 
+      if (tablesToShow.length > 0) {
+         // If only table name matches, no specific guest to highlight in the cards
+        guestNameToHighlight = null;
+      } else {
+        // If neither guest nor table name matches, tablesToShow will be empty
+        guestNameToHighlight = null;
+      }
     }
 
     setDisplayedTables(tablesToShow);
@@ -158,17 +165,24 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       reader.onload = (e) => {
         const text = e.target?.result as string;
         const parsedData = parseSeatingChartCsv(text);
-        if (parsedData && parsedData.tables.length > 0) {
+        if (parsedData && parsedData.tables.length > 0 && parsedData.tables.length <= 20) {
           setCurrentSeatingData(parsedData);
           setSearchTerm(''); // Reset search term
           toast({
             title: "CSV Uploaded Successfully",
             description: "Seating chart has been updated with the CSV data.",
           });
-        } else {
+        } else if (parsedData && parsedData.tables.length > 20) {
+           toast({
+            title: "CSV Upload Failed",
+            description: "The CSV file contains more than 20 tables. Please upload a file with 1 to 20 tables.",
+            variant: "destructive",
+          });
+        }
+        else {
           toast({
             title: "CSV Upload Failed",
-            description: "Could not parse CSV file or file is empty/invalid. Please ensure it's in 'Name,Table' format.",
+            description: "Could not parse CSV file or file is empty/invalid. Please ensure it's in 'Name,Table' format and has 1 to 20 tables.",
             variant: "destructive",
           });
         }
@@ -187,6 +201,51 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       }
     }
   };
+
+  const handleDownloadCsv = () => {
+    if (currentSeatingData.tables.length === 0) {
+      toast({
+        title: "No Data to Download",
+        description: "The seating chart is currently empty.",
+        variant: "default",
+      });
+      return;
+    }
+
+    let csvContent = "Name,Table\n";
+    currentSeatingData.tables.forEach(table => {
+      table.guests.forEach(guest => {
+        // Escape double quotes within names/tables by doubling them, and enclose in double quotes
+        const guestName = `"${guest.name.replace(/"/g, '""')}"`;
+        const tableName = `"${table.name.replace(/"/g, '""')}"`;
+        csvContent += `${guestName},${tableName}\n`;
+      });
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) { // feature detection
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "seating_chart_assignments.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({
+        title: "CSV Download Started",
+        description: "Your seating chart data is being downloaded.",
+      });
+    } else {
+       toast({
+        title: "Download Failed",
+        description: "Your browser does not support automatic downloads.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
@@ -216,7 +275,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             )}
             {foundGuestsDetails.length > 1 && (
               <>
-                <p className="mb-1">Found {foundGuestsDetails.length} instances of guests matching "{searchTerm}":</p>
+                <p className="mb-1">Found {foundGuestsDetails.length} guests matching "{searchTerm}":</p>
                 <ul className="list-disc pl-5 space-y-0.5 max-h-32 overflow-y-auto">
                   {foundGuestsDetails.map((detail, index) => (
                     <li key={index}>
@@ -261,7 +320,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       )}
       
       <footer className="mt-8 pt-4 border-t border-border text-center text-muted-foreground text-sm space-y-2">
-        <div>
+        <div className="flex justify-center items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
                 <UploadCloud className="mr-2 h-3 w-3" />
                 Upload CSV (Name,Table)
@@ -274,6 +333,10 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                 className="hidden"
                 aria-hidden="true"
             />
+             <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="text-xs">
+                <DownloadCloud className="mr-2 h-3 w-3" />
+                Download CSV
+            </Button>
         </div>
         <p>Total Tables: {currentSeatingData.tables.length} | Total Guests: {totalGuests}</p>
         <p>Seating Savior &copy; {new Date().getFullYear()}</p>
