@@ -1,3 +1,4 @@
+
 import type { FC } from 'react';
 import type { Table as TableType, Guest } from '@/types/seating';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -5,12 +6,13 @@ import { Users, ListChecks } from 'lucide-react';
 
 interface TableCardProps {
   table: TableType;
-  tableIndex: number; // Added for unique background image
+  tableIndex: number;
+  highlightedGuestName?: string | null; // Added for highlighting
 }
 
 const flowerHints = ["rose", "tulip", "sunflower", "daisy", "lily", "orchid", "poppy", "lavender", "marigold", "peony"];
 
-const TableCard: FC<TableCardProps> = ({ table, tableIndex }) => {
+const TableCard: FC<TableCardProps> = ({ table, tableIndex, highlightedGuestName }) => {
   const guestRows: Guest[][] = [];
   for (let i = 0; i < table.guests.length; i += 2) {
     guestRows.push(table.guests.slice(i, i + 2));
@@ -55,7 +57,10 @@ const TableCard: FC<TableCardProps> = ({ table, tableIndex }) => {
                       ${rowGuests.length === 2 ? 'w-1/2' : 'w-full'}
                       ${guestIndexInRow === 0 && rowGuests.length === 2 ? 'pr-1 break-words' : 'break-words'}
                       ${guestIndexInRow === 1 && rowGuests.length === 2 ? 'pl-1 break-words' : ''}
-                      text-foreground/90
+                      ${highlightedGuestName && guest.name.toLowerCase().includes(highlightedGuestName.toLowerCase())
+                        ? 'bg-accent text-accent-foreground rounded font-semibold px-1 py-0.5'
+                        : 'text-foreground/90 px-1 py-0.5'
+                      }
                     `}
                   >
                     {guest.name}

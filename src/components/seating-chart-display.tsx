@@ -21,63 +21,64 @@ interface SeatingChartDisplayProps {
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedGuestName, setHighlightedGuestName] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); 
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // New states for improved search and alert
+  const [foundGuestsDetails, setFoundGuestsDetails] = useState<{ guestName: string, tableName: string }[]>([]);
+  const [displayedTables, setDisplayedTables] = useState<TableType[]>(() => data.tables);
 
-  const filteredTablesAndGuests = useMemo(() => {
+  useEffect(() => {
     if (!searchTerm.trim()) {
       setHighlightedGuestName(null);
-      return { tables: data.tables, guestHighlight: null };
+      setFoundGuestsDetails([]);
+      setDisplayedTables(data.tables);
+      return;
     }
 
     const lowerSearchTerm = searchTerm.toLowerCase();
-    let guestResult: { table: TableType, guest: Guest } | null = null;
+    const newFoundGuestsDetails: { guestName: string, tableName: string }[] = [];
+    let tablesToShow: TableType[] = [];
+    let guestNameToHighlight: string | null = null;
 
-    for (const table of data.tables) {
-      for (const guest of table.guests) {
-        if (guest.name.toLowerCase() === lowerSearchTerm) {
-          guestResult = { table, guest };
-          break;
+    const tablesContainingMatchingGuests: TableType[] = [];
+
+    data.tables.forEach(table => {
+      let tableHasMatch = false;
+      table.guests.forEach(guest => {
+        if (guest.name.toLowerCase().includes(lowerSearchTerm)) {
+          newFoundGuestsDetails.push({ guestName: guest.name, tableName: table.name });
+          tableHasMatch = true;
+        }
+      });
+      if (tableHasMatch) {
+        // Add a copy of the table to avoid modifying the original data if needed later for other operations
+        // For now, direct reference is fine as we are just filtering.
+        if (!tablesContainingMatchingGuests.some(t => t.id === table.id)) {
+             tablesContainingMatchingGuests.push(table);
         }
       }
-      if (guestResult) break;
-    }
-    
-    if (!guestResult) {
-      for (const table of data.tables) {
-        for (const guest of table.guests) {
-          if (guest.name.toLowerCase().includes(lowerSearchTerm)) {
-            guestResult = { table, guest }; 
-            break;
-          }
-        }
-        if (guestResult) break;
-      }
+    });
+
+    if (newFoundGuestsDetails.length > 0) {
+      guestNameToHighlight = searchTerm; // Use search term for highlighting partial matches
+      tablesToShow = tablesContainingMatchingGuests;
+    } else {
+      // If no guests found by name, search tables by name
+      tablesToShow = data.tables.filter(table =>
+        table.name.toLowerCase().includes(lowerSearchTerm)
+      );
+      guestNameToHighlight = null; // No guest to highlight if only table name matched
     }
 
-    if (guestResult) {
-      setHighlightedGuestName(guestResult.guest.name);
-      return { tables: [guestResult.table], guestHighlight: guestResult.guest.name };
-    }
-
-    setHighlightedGuestName(null);
-    const tablesByName = data.tables.filter(table =>
-      table.name.toLowerCase().includes(lowerSearchTerm)
-    );
-    return { tables: tablesByName, guestHighlight: null };
-
+    setDisplayedTables(tablesToShow);
+    setFoundGuestsDetails(newFoundGuestsDetails);
+    setHighlightedGuestName(guestNameToHighlight);
   }, [data.tables, searchTerm]);
 
 
   const totalGuests = useMemo(() => {
     return data.tables.reduce((sum, table) => sum + table.guests.length, 0);
   }, [data.tables]);
-
-
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setHighlightedGuestName(null);
-    }
-  }, [searchTerm]);
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
@@ -119,17 +120,36 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         </div>
       </div>
 
-      {searchTerm && highlightedGuestName && (
-        <Alert variant="default" className="bg-accent/20 border-accent text-accent-foreground">
+      {/* Alert for found guests */}
+      {searchTerm && foundGuestsDetails.length > 0 && (
+        <Alert variant="default" className="bg-accent/20 border-accent">
           <Users className="h-5 w-5 text-accent" />
-          <AlertTitle className="text-accent">Guest Found!</AlertTitle>
-          <AlertDescription>
-            <strong>{highlightedGuestName}</strong> is seated at <strong>{filteredTablesAndGuests.tables[0]?.name}</strong>.
+          <AlertTitle className="text-accent">Search Results</AlertTitle>
+          <AlertDescription className="text-black dark:text-gray-100">
+            {foundGuestsDetails.length === 1 && (
+              <div>
+                <strong>{foundGuestsDetails[0].guestName}</strong> is seated at <strong>{foundGuestsDetails[0].tableName}</strong>.
+              </div>
+            )}
+            {foundGuestsDetails.length > 1 && (
+              <>
+                <p className="mb-1">Found {foundGuestsDetails.length} instances of guests matching "{searchTerm}":</p>
+                <ul className="list-disc pl-5 space-y-0.5 max-h-32 overflow-y-auto">
+                  {foundGuestsDetails.map((detail, index) => (
+                    <li key={index}>
+                      <strong>{detail.guestName}</strong> at <strong>{detail.tableName}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p className="mt-1">Relevant tables are listed below, and matching guests are highlighted.</p>
           </AlertDescription>
         </Alert>
       )}
 
-      {filteredTablesAndGuests.tables.length === 0 && searchTerm && (
+      {/* Alert for no results */}
+      {searchTerm && displayedTables.length === 0 && (
         <Alert variant="destructive">
           <Info className="h-5 w-5" />
           <AlertTitle>No Results</AlertTitle>
@@ -139,16 +159,16 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         </Alert>
       )}
 
-      {filteredTablesAndGuests.tables.length > 0 && viewMode === 'grid' && (
+      {displayedTables.length > 0 && viewMode === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredTablesAndGuests.tables.map((table, index) => (
-            <TableCard key={table.id} table={table} tableIndex={index} />
+          {displayedTables.map((table, index) => (
+            <TableCard key={table.id} table={table} tableIndex={index} highlightedGuestName={highlightedGuestName} />
           ))}
         </div>
       )}
-      {filteredTablesAndGuests.tables.length > 0 && viewMode === 'list' && (
+      {displayedTables.length > 0 && viewMode === 'list' && (
          <div className="space-y-4">
-          {filteredTablesAndGuests.tables.map((table, tableIndex) => {
+          {displayedTables.map((table, tableIndex) => {
             const guestRows: Guest[][] = [];
             for (let i = 0; i < table.guests.length; i += 2) {
               guestRows.push(table.guests.slice(i, i + 2));
@@ -192,7 +212,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                                 ${guestIndexInRow === 0 && rowGuests.length === 2 ? 'pr-2' : ''}
                                 ${guestIndexInRow === 1 && rowGuests.length === 2 ? 'pl-2' : ''}
                                 break-words
-                                ${guest.name === highlightedGuestName
+                                ${highlightedGuestName && guest.name.toLowerCase().includes(highlightedGuestName.toLowerCase())
                                   ? 'bg-accent text-accent-foreground rounded font-semibold px-1 py-0.5'
                                   : 'text-foreground/90 px-1 py-0.5'
                                 }
