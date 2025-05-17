@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FC } from 'react';
@@ -17,7 +18,7 @@ const Header: FC<HeaderProps> = ({ appName }) => {
           data-ai-hint="flower logo"
           width={32}
           height={32}
-          className="h-8 w-8"
+          className="h-8 w-8 rounded-full" // Added rounded-full
           priority // Preload logo as it's LCP candidate
           onError={(e) => {
             // Fallback to placeholder if local image fails to load
@@ -44,3 +45,4 @@ const Header: FC<HeaderProps> = ({ appName }) => {
 };
 
 export default Header;
+
