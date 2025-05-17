@@ -15,7 +15,7 @@ interface SeatingChartDisplayProps {
   data: SeatingChartData;
 }
 
-// Helper function to parse CSV
+// Helper function to parse CSV - focuses only on parsing, sorting is handled by sortTableData
 function parseSeatingChartCsv(csvString: string): SeatingChartData | null {
   try {
     const lines = csvString.trim().split('\n');
@@ -24,15 +24,13 @@ function parseSeatingChartCsv(csvString: string): SeatingChartData | null {
     const guestTableMap = new Map<string, Guest[]>();
     let guestIdCounter = 0;
 
-    // Skip header if present (simple check for "name" and "table" in the first line)
     const firstLineLower = lines[0].toLowerCase();
     const startIndex = (firstLineLower.includes('name') && firstLineLower.includes('table')) ? 1 : 0;
 
     for (let i = startIndex; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-
-      // Handle potential quotes around fields, common in CSV
+      
       const parts = line.split(',').map(part => part.trim().replace(/^"|"$/g, ''));
       
       if (parts.length < 2) {
@@ -51,13 +49,12 @@ function parseSeatingChartCsv(csvString: string): SeatingChartData | null {
         guestTableMap.set(tableName, []);
       }
       guestTableMap.get(tableName)!.push({
-        id: `csv-guest-${guestIdCounter++}-${Date.now()}`, // Simple unique ID
+        id: `csv-guest-${guestIdCounter++}-${Date.now()}`,
         name: guestName,
       });
     }
 
     if (guestTableMap.size === 0) {
-        // If after parsing, no valid data was extracted (e.g. header only, or all lines invalid)
         console.warn("CSV parsing resulted in no valid table data.");
         return null;
     }
@@ -65,21 +62,20 @@ function parseSeatingChartCsv(csvString: string): SeatingChartData | null {
     const tables: TableType[] = [];
     let tableIdCounter = 0;
     for (const [tableName, guests] of guestTableMap.entries()) {
+      // Guests will be sorted by sortTableData later
       tables.push({
-        id: `csv-table-${tableIdCounter++}-${Date.now()}`, // Simple unique ID
+        id: `csv-table-${tableIdCounter++}-${Date.now()}`,
         name: tableName,
         guests: guests,
       });
     }
-    tables.sort((a, b) => a.name.localeCompare(b.name)); // Sort tables by name
-
+    // Tables will be sorted by sortTableData later
     return { tables };
   } catch (error) {
     console.error("Error parsing CSV:", error);
     return null;
   }
 }
-
 
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(data);
@@ -92,16 +88,59 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Effect to update displayed data if the prop 'data' changes (e.g., for initial load or reset)
+  const sortTableData = (chartData: SeatingChartData): SeatingChartData => {
+    const sortedTables = chartData.tables.map(table => ({
+      ...table,
+      // Sort guests alphabetically within each table
+      guests: [...table.guests].sort((a, b) => a.name.localeCompare(b.name))
+    })).sort((a, b) => {
+      // Helper to extract prefix and number from table names for robust sorting
+      const extractDetails = (name: string): { prefix: string, num: number | null } => {
+        const patternMatch = name.match(/^([a-zA-Z\s.'-]+?)(\d+)$/i); // Prefix (letters, spaces, dots, apostrophes, hyphens) followed by number
+        if (patternMatch && patternMatch[1] && patternMatch[2]) {
+          return { prefix: patternMatch[1].trim(), num: parseInt(patternMatch[2], 10) };
+        }
+        const pureNumericMatch = name.match(/^(\d+)$/); // Purely numeric name
+        if (pureNumericMatch) {
+          return { prefix: "", num: parseInt(pureNumericMatch[1], 10) };
+        }
+        return { prefix: name.trim(), num: null }; // No number or complex name, treat whole as prefix
+      };
+
+      const detailsA = extractDetails(a.name);
+      const detailsB = extractDetails(b.name);
+
+      // Primary sort: by prefix (case-insensitive)
+      const prefixCompare = detailsA.prefix.toLowerCase().localeCompare(detailsB.prefix.toLowerCase());
+      if (prefixCompare !== 0) {
+        return prefixCompare;
+      }
+
+      // Secondary sort: by number (if prefixes are the same and both have numbers)
+      if (detailsA.num !== null && detailsB.num !== null) {
+        return detailsA.num - detailsB.num;
+      }
+      
+      // Tertiary sort: tables with numbers before those without (if prefixes are same)
+      if (detailsA.num !== null) return -1; // A has number, B doesn't
+      if (detailsB.num !== null) return 1;  // B has number, A doesn't
+      
+      // Fallback: if prefixes are same and neither has a distinguishable number, sort by full name
+      return a.name.localeCompare(b.name);
+    });
+    return { tables: sortedTables };
+  };
+
+
   useEffect(() => {
-    setCurrentSeatingData(data);
-  }, [data]);
+    setCurrentSeatingData(sortTableData(data));
+  }, [data]); // sortTableData is stable if defined outside or memoized, fine here.
   
   useEffect(() => {
     if (!searchTerm.trim()) {
       setHighlightedGuestName(null);
       setFoundGuestsDetails([]);
-      setDisplayedTables(currentSeatingData.tables);
+      setDisplayedTables(currentSeatingData.tables); // Assumes currentSeatingData.tables is already sorted
       return;
     }
 
@@ -129,19 +168,15 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
     if (newFoundGuestsDetails.length > 0) {
       guestNameToHighlight = searchTerm; 
-      tablesToShow = tablesContainingMatchingGuests;
+      // Filter ensures that only tables with matching guests are shown, preserving their original sorted order
+      tablesToShow = currentSeatingData.tables.filter(table => 
+        tablesContainingMatchingGuests.some(matchedTable => matchedTable.id === table.id)
+      );
     } else {
-      // If no guests match, check if table names match
        tablesToShow = currentSeatingData.tables.filter(table =>
         table.name.toLowerCase().includes(lowerSearchTerm)
-      );
-      if (tablesToShow.length > 0) {
-         // If only table name matches, no specific guest to highlight in the cards
-        guestNameToHighlight = null;
-      } else {
-        // If neither guest nor table name matches, tablesToShow will be empty
-        guestNameToHighlight = null;
-      }
+      ); // This also preserves order
+      guestNameToHighlight = tablesToShow.length > 0 ? null : null;
     }
 
     setDisplayedTables(tablesToShow);
@@ -166,8 +201,8 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         const text = e.target?.result as string;
         const parsedData = parseSeatingChartCsv(text);
         if (parsedData && parsedData.tables.length > 0 && parsedData.tables.length <= 20) {
-          setCurrentSeatingData(parsedData);
-          setSearchTerm(''); // Reset search term
+          setCurrentSeatingData(sortTableData(parsedData)); // Apply sorting
+          setSearchTerm('');
           toast({
             title: "CSV Uploaded Successfully",
             description: "Seating chart has been updated with the CSV data.",
@@ -195,7 +230,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
           });
       }
       reader.readAsText(file);
-      // Reset file input value to allow uploading the same file again
       if(fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -213,9 +247,10 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     }
 
     let csvContent = "Name,Table\n";
+    // Use currentSeatingData which is sorted
     currentSeatingData.tables.forEach(table => {
+      // Guests within table are also sorted in currentSeatingData
       table.guests.forEach(guest => {
-        // Escape double quotes within names/tables by doubling them, and enclose in double quotes
         const guestName = `"${guest.name.replace(/"/g, '""')}"`;
         const tableName = `"${table.name.replace(/"/g, '""')}"`;
         csvContent += `${guestName},${tableName}\n`;
@@ -224,7 +259,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    if (link.download !== undefined) { // feature detection
+    if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
       link.setAttribute("download", "seating_chart_assignments.csv");
@@ -300,7 +335,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         </Alert>
       )}
       
-      {/* Always show tables if currentSeatingData has tables, search will filter them via displayedTables */}
       {currentSeatingData.tables.length === 0 && !searchTerm && (
          <Alert variant="default">
             <Info className="h-5 w-5" />
@@ -346,4 +380,3 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
-

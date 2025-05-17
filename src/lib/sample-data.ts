@@ -32,11 +32,15 @@ export function generateSampleData(): SeatingChartData {
         name: getRandomName(usedNames),
       });
     }
+    // Sort guests alphabetically by name
+    guests.sort((a, b) => a.name.localeCompare(b.name));
+    
     tables.push({
       id: `table-${i}-${Math.random().toString(36).substring(7)}`, // Ensure unique IDs
       name: `Table ${i}`,
       guests,
     });
   }
+  // Tables are already generated in "Table 1", "Table 2", etc. order, so no need to sort tables array here.
   return { tables };
 }
