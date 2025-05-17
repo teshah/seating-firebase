@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Effortless event seating arrangements by Seating Savior.',
   manifest: '/manifest.json', // Link to the manifest file
   icons: {
-    icon: '/favicon.ico', // Standard favicon
+    icon: { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' }, // Standard favicon
     apple: '/icons/icon-192x192.png', // Apple touch icon
   },
   applicationName: "Jaanvi's Sweet Seats",
