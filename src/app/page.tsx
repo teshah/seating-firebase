@@ -9,7 +9,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header appName="Jaanvi's Sweet 16 Table Seating" />
+      <Header appName="Jaanvi's Sweet Seats" />
       <main className="flex-grow container mx-auto px-0 sm:px-4 py-0 sm:py-8">
         <SeatingChartDisplay data={sampleData} />
       </main>

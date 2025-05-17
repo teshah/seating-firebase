@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Jaanvi's Sweet 16 Table Seating",
+  title: "Jaanvi's Sweet Seats",
   description: 'Effortless event seating arrangements by Seating Savior.',
 };
 
