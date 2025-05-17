@@ -10,14 +10,9 @@ interface TableCardProps {
   highlightedGuestName?: string | null; // Added for highlighting
 }
 
-const sevenWondersHints = [
-  "pyramid giza", 
-  "hanging gardens babylon", 
-  "statue zeus olympia", 
-  "temple artemis ephesus", 
-  "mausoleum halicarnassus", 
-  "colossus rhodes", 
-  "lighthouse alexandria"
+const flowerHints = [
+  "rose flower", "tulip flower", "daisy flower", "sunflower", "lily flower", "orchid flower",
+  "carnation flower", "hibiscus flower", "lavender flower", "peony flower", "marigold flower", "lotus flower"
 ];
 
 const TableCard: FC<TableCardProps> = ({ table, tableIndex, highlightedGuestName }) => {
@@ -26,18 +21,28 @@ const TableCard: FC<TableCardProps> = ({ table, tableIndex, highlightedGuestName
     guestRows.push(table.guests.slice(i, i + 2));
   }
 
+  const localImageNumber = (tableIndex % 12) + 1;
+  const localImagePath = `/images/table-bg-${localImageNumber}.png`;
+
   return (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
-      <CardHeader 
+      <CardHeader
         className="relative flex flex-row items-center justify-between space-y-0 rounded-t-lg border-b border-border overflow-hidden h-24 p-0"
-        data-ai-hint={sevenWondersHints[tableIndex % sevenWondersHints.length]}
+        data-ai-hint={flowerHints[tableIndex % flowerHints.length]}
       >
         <div
           className="absolute inset-0 bg-cover bg-center z-0"
-          style={{ backgroundImage: `url(https://picsum.photos/300/100?random=${tableIndex})` }}
+          style={{ backgroundImage: `url(${localImagePath})` }}
+          // Fallback to a placeholder if local image is missing, for development.
+          // In production, ensure all images exist.
+          onError={(e) => {
+             const target = e.target as HTMLDivElement;
+             target.style.backgroundImage = `url(https://placehold.co/300x100.png)`;
+             target.parentElement!.setAttribute('data-ai-hint', 'placeholder image');
+          }}
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-black/40 z-0" aria-hidden="true"/> 
+        <div className="absolute inset-0 bg-black/40 z-0" aria-hidden="true"/>
 
         <div className="relative z-10 flex flex-row items-center justify-between w-full px-4 py-2">
           <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
