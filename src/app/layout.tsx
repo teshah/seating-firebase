@@ -5,6 +5,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: "Jaanvi's Sweet Seats",
   description: 'Effortless event seating arrangements by Seating Savior.',
+  icons: {
+    icon: '/favicon.ico', // Points to src/app/favicon.ico
+  },
 };
 
 export default function RootLayout({
