@@ -10,7 +10,7 @@ import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud, PartyPopper, Download, Square } from 'lucide-react'; // Added PartyPopper, Download, Square
+import { Search, Users, Info, UploadCloud, PartyPopper, Download, Square, Gift } from 'lucide-react'; // Added PartyPopper, Download, Square, Gift
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,7 +41,9 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [canShowWishButton, setCanShowWishButton] = useState(false);
   const [runConfetti, setRunConfetti] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Removed duplicate audioRef declaration here
+
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 }); // For confetti
 
   useEffect(() => {
     setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
@@ -257,12 +259,14 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {runConfetti && (
+      {runConfetti && typeof window !== 'undefined' && ( // Ensure window is defined for Confetti
         <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
           run={runConfetti}
           recycle={true}
           numberOfPieces={250}
-          className="!fixed"
+          className="!fixed" // Ensure confetti covers the whole screen
         />
       )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
@@ -290,12 +294,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             </Button>
           )}
         </div>
-        {canShowWishButton && (
-          <Button onClick={handleWishClick} variant="outline" size="sm" className="text-xs">
-            {isPlayingAudio ? <Square className="mr-2 h-3 w-3" /> : <Gift className="mr-2 h-3 w-3" /> }
-            {isPlayingAudio ? 'Stop Wishing' : 'Wish Happy Birthday!'}
-          </Button>
-        )}
       </div>
 
       {searchTerm && foundGuestsDetails.length > 0 && (
@@ -361,10 +359,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                     Upload CSV (Name,Table)
                 </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="text-xs">
-                <Download className="mr-2 h-3 w-3" />
-                Download CSV
-            </Button>
+           {/* Download button removed as per request */}
             <input
                 type="file"
                 ref={fileInputRef}
@@ -382,6 +377,8 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
+    
+
     
 
     
