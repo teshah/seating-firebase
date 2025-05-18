@@ -1,6 +1,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { Suspense } from 'react'; // Added Suspense import
 import Header from '@/components/layout/header';
 import SeatingChartDisplay from '@/components/seating-chart-display';
 import { generateSampleData } from '@/lib/sample-data';
@@ -45,7 +46,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Header appName="Jaanvi's Sweet Seats" />
       <main className="flex-grow container mx-auto px-0 sm:px-4 py-0 sm:py-8">
-        <SeatingChartDisplay data={initialData} />
+        <Suspense fallback={<div className="text-center p-8">Loading seating chart...</div>}>
+          <SeatingChartDisplay data={initialData} />
+        </Suspense>
       </main>
       <Toaster />
     </div>
