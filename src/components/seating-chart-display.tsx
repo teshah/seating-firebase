@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FC } from 'react';
@@ -9,7 +10,7 @@ import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud, PartyPopper, Download } from 'lucide-react'; // Added PartyPopper, Download
+import { Search, Users, Info, UploadCloud, PartyPopper, Download, Square } from 'lucide-react'; // Added PartyPopper, Download, Square
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -97,12 +98,21 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     setHighlightedGuestName(guestNameToHighlight);
   }, [currentSeatingData.tables, searchTerm]);
 
+  const handleAudioEnded = () => {
+    setRunConfetti(false);
+    setIsAudioPlaying(false);
+    if (audioRef.current) {
+        audioRef.current.currentTime = 0; // Reset for next play
+    }
+  };
+
   // Cleanup audio on component unmount
   useEffect(() => {
+    const currentAudio = audioRef.current;
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.removeEventListener('ended', handleAudioEnded);
       }
     };
   }, []);
@@ -159,49 +169,43 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   };
 
   const handleWishBirthday = () => {
-    if (isAudioPlaying) return; // Prevent multiple plays
+    if (isAudioPlaying) {
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.removeEventListener('ended', handleAudioEnded); // Clean up listener
+      }
+      setRunConfetti(false);
+      setIsAudioPlaying(false);
+    } else {
+      // Start playing
+      toast({
+        title: "🎉 Happy Birthday! 🎉",
+        description: "Hope you have a fantastic day!",
+        duration: 5000,
+      });
+      setRunConfetti(true);
+      setIsAudioPlaying(true);
 
-    toast({
-      title: "🎉 Happy Birthday! 🎉",
-      description: "Hope you have a fantastic day!",
-      duration: 5000,
-    });
-    setRunConfetti(true);
-    setIsAudioPlaying(true);
-
-    try {
-      const audio = new Audio('/audio/happy-birthday.mp3');
-      audioRef.current = audio;
-      
-      // Stop audio and cleanup after 15 seconds
-      const stopTimeout = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
+      if (!audioRef.current) {
+        try {
+          audioRef.current = new Audio('/audio/happy-birthday.mp3');
+        } catch (error) {
+          console.error("Failed to create audio object:", error);
           setRunConfetti(false);
           setIsAudioPlaying(false);
-          audioRef.current = null;
+          return;
         }
-      }, 15500);
-
-      audio.addEventListener('ended', () => {
-        clearTimeout(stopTimeout);
-        setRunConfetti(false);
-        setIsAudioPlaying(false);
-        audioRef.current = null;
-      });
-
-      audio.play().catch(error => {
-        clearTimeout(stopTimeout);
+      }
+      
+      audioRef.current.addEventListener('ended', handleAudioEnded);
+      audioRef.current.play().catch(error => {
         console.error("Error playing birthday audio:", error);
         setRunConfetti(false);
         setIsAudioPlaying(false);
-        audioRef.current = null;
+        audioRef.current?.removeEventListener('ended', handleAudioEnded);
       });
-    } catch (error) {
-      console.error("Failed to create audio object:", error);
-      setRunConfetti(false);
-      setIsAudioPlaying(false);
     }
   };
 
@@ -268,10 +272,9 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
               variant="outline" 
               size="default" 
               className="w-full sm:w-auto flex-shrink-0"
-              disabled={isAudioPlaying}
             >
-              <PartyPopper className="mr-2 h-5 w-5" />
-              {isAudioPlaying ? "Playing..." : "Wish Happy Birthday"}
+              {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
+              {isAudioPlaying ? "Stop Birthday Song" : "Wish Happy Birthday"}
             </Button>
           )}
         </div>
@@ -361,4 +364,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
+    
+
     
