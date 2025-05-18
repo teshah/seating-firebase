@@ -3,13 +3,14 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation'; // Added for URL params
+import { useSearchParams } from 'next/navigation';
+// import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud } from 'lucide-react'; // Removed DownloadCloud
+import { Search, Users, Info, UploadCloud, PartyPopper } from 'lucide-react'; // Added PartyPopper
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +19,10 @@ interface SeatingChartDisplayProps {
 }
 
 const UPLOAD_SECRET_KEY = 'upload';
-const UPLOAD_SECRET_VALUE = 'true'; // This is your secret code word
+const UPLOAD_SECRET_VALUE = 'true';
+
+const WISH_PARAM_KEY = 'wish';
+const WISH_PARAM_VALUE = 'true';
 
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(() => sortTableData(data));
@@ -32,8 +36,13 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  const canShowUploadButton = useMemo(() => {
-    return searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE;
+  const [canShowUploadButton, setCanShowUploadButton] = useState(false);
+  const [canShowWishButton, setCanShowWishButton] = useState(false);
+  const [runConfetti, setRunConfetti] = useState(false);
+
+  useEffect(() => {
+    setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
+    setCanShowWishButton(searchParams.get(WISH_PARAM_KEY) === WISH_PARAM_VALUE);
   }, [searchParams]);
 
   useEffect(() => {
@@ -139,19 +148,47 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     }
   };
 
+  const handleWishBirthday = () => {
+    toast({
+      title: "🎉 Happy Birthday! 🎉",
+      description: "Hope you have a fantastic day!",
+      duration: 5000, // Keep toast longer for confetti
+    });
+    setRunConfetti(true);
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 border-b border-border">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search by guest or table name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 text-base"
-            aria-label="Search seating chart"
-          />
+      {/*
+      {runConfetti && (
+        <Confetti
+          run={runConfetti}
+          recycle={false}
+          numberOfPieces={250}
+          onConfettiComplete={() => setRunConfetti(false)}
+          className="!fixed" // Ensure it covers the whole viewport
+        />
+      )}
+      */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+          <div className="relative w-full sm:flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by guest or table name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 text-base w-full"
+              aria-label="Search seating chart"
+            />
+          </div>
+          {canShowWishButton && (
+            <Button onClick={handleWishBirthday} variant="outline" size="default" className="w-full sm:w-auto flex-shrink-0">
+              <PartyPopper className="mr-2 h-5 w-5" />
+              Wish Happy Birthday
+            </Button>
+          )}
         </div>
       </div>
 
