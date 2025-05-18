@@ -38,7 +38,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   const [canShowUploadButton, setCanShowUploadButton] = useState(false);
   const [canShowWishButton, setCanShowWishButton] = useState(false);
-  // const [runConfetti, setRunConfetti] = useState(false);
+  const [runConfetti, setRunConfetti] = useState(false);
 
   useEffect(() => {
     setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
@@ -154,7 +154,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       description: "Hope you have a fantastic day!",
       duration: 5000, // Keep toast longer for confetti
     });
-    // setRunConfetti(true);
+    setRunConfetti(true);
 
     // Play Happy Birthday audio
     // Ensure you have 'happy-birthday.mp3' in your 'public/audio/' folder
