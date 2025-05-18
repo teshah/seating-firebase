@@ -3,13 +3,14 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation'; // Added for URL params
+import { useSearchParams } from 'next/navigation';
+import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud } from 'lucide-react'; // Removed DownloadCloud
+import { Search, Users, Info, UploadCloud, PartyPopper, Download, Square } from 'lucide-react'; // Added PartyPopper, Download, Square
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +19,10 @@ interface SeatingChartDisplayProps {
 }
 
 const UPLOAD_SECRET_KEY = 'upload';
-const UPLOAD_SECRET_VALUE = 'true'; // This is your secret code word
+const UPLOAD_SECRET_VALUE = 'true';
+
+const WISH_PARAM_KEY = 'wish';
+const WISH_PARAM_VALUE = 'true';
 
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(() => sortTableData(data));
@@ -32,8 +36,15 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  const canShowUploadButton = useMemo(() => {
-    return searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE;
+  const [canShowUploadButton, setCanShowUploadButton] = useState(false);
+  const [canShowWishButton, setCanShowWishButton] = useState(false);
+  const [runConfetti, setRunConfetti] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
+    setCanShowWishButton(searchParams.get(WISH_PARAM_KEY) === WISH_PARAM_VALUE);
   }, [searchParams]);
 
   useEffect(() => {
@@ -87,6 +98,24 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     setHighlightedGuestName(guestNameToHighlight);
   }, [currentSeatingData.tables, searchTerm]);
 
+  const handleAudioEnded = () => {
+    setRunConfetti(false);
+    setIsAudioPlaying(false);
+    if (audioRef.current) {
+        audioRef.current.currentTime = 0; // Reset for next play
+    }
+  };
+
+  // Cleanup audio on component unmount
+  useEffect(() => {
+    const currentAudio = audioRef.current;
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.removeEventListener('ended', handleAudioEnded);
+      }
+    };
+  }, []);
 
   const totalGuests = useMemo(() => {
     return currentSeatingData.tables.reduce((sum, table) => sum + table.guests.length, 0);
@@ -139,19 +168,115 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     }
   };
 
+  const handleWishBirthday = () => {
+    if (isAudioPlaying) {
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.removeEventListener('ended', handleAudioEnded); // Clean up listener
+      }
+      setRunConfetti(false);
+      setIsAudioPlaying(false);
+    } else {
+      // Start playing
+      toast({
+        title: "🎉 Happy Birthday! 🎉",
+        description: "Hope you have a fantastic day!",
+        duration: 5000,
+      });
+      setRunConfetti(true);
+      setIsAudioPlaying(true);
+
+      if (!audioRef.current) {
+        try {
+          audioRef.current = new Audio('/audio/happy-birthday.mp3');
+        } catch (error) {
+          console.error("Failed to create audio object:", error);
+          setRunConfetti(false);
+          setIsAudioPlaying(false);
+          return;
+        }
+      }
+      
+      audioRef.current.addEventListener('ended', handleAudioEnded);
+      audioRef.current.play().catch(error => {
+        console.error("Error playing birthday audio:", error);
+        setRunConfetti(false);
+        setIsAudioPlaying(false);
+        audioRef.current?.removeEventListener('ended', handleAudioEnded);
+      });
+    }
+  };
+
+  const convertToCsv = (data: SeatingChartData): string => {
+    const header = "Name,Table\n";
+    const rows = data.tables.flatMap(table => 
+      table.guests.map(guest => `"${guest.name.replace(/"/g, '""')}","${table.name.replace(/"/g, '""')}"`)
+    );
+    return header + rows.join("\n");
+  };
+
+  const handleDownloadCsv = () => {
+    if (currentSeatingData.tables.length === 0) {
+      toast({
+        title: "No Data to Download",
+        description: "The seating chart is currently empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const csvString = convertToCsv(currentSeatingData);
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "seating-chart.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "CSV Downloaded",
+      description: "Current seating assignments have been downloaded.",
+    });
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 border-b border-border">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search by guest or table name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 text-base"
-            aria-label="Search seating chart"
-          />
+      {runConfetti && (
+        <Confetti
+          run={runConfetti}
+          recycle={true}
+          numberOfPieces={250}
+          className="!fixed"
+        />
+      )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+          <div className="relative w-full sm:flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by guest or table name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 text-base w-full"
+              aria-label="Search seating chart"
+            />
+          </div>
+          {canShowWishButton && (
+            <Button 
+              onClick={handleWishBirthday} 
+              variant="outline" 
+              size="default" 
+              className="w-full sm:w-auto flex-shrink-0"
+            >
+              {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
+              {isAudioPlaying ? "Stop Birthday Song" : "Wish Happy Birthday"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -211,22 +336,26 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       )}
       
       <footer className="mt-8 pt-4 border-t border-border text-center text-muted-foreground text-sm space-y-2">
-        {canShowUploadButton && (
-          <div className="flex justify-center items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
-                  <UploadCloud className="mr-2 h-3 w-3" />
-                  Upload CSV (Name,Table)
-              </Button>
-              <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".csv"
-                  className="hidden"
-                  aria-hidden="true"
-              />
-          </div>
-        )}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2">
+            {canShowUploadButton && (
+                <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
+                    <UploadCloud className="mr-2 h-3 w-3" />
+                    Upload CSV (Name,Table)
+                </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="text-xs">
+                <Download className="mr-2 h-3 w-3" />
+                Download CSV
+            </Button>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".csv"
+                className="hidden"
+                aria-hidden="true"
+            />
+        </div>
         <p>Total Tables: {currentSeatingData.tables.length} | Total Guests: {totalGuests}</p>
         <p>Seating Savior &copy; {new Date().getFullYear()}</p>
       </footer>
@@ -235,5 +364,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
+    
 
     
