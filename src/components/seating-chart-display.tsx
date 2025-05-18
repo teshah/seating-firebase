@@ -10,7 +10,7 @@ import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud, PartyPopper } from 'lucide-react'; // Added PartyPopper
+import { Search, Users, Info, UploadCloud, PartyPopper, Download } from 'lucide-react'; // Added PartyPopper, Download
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -155,6 +155,53 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       duration: 5000, // Keep toast longer for confetti
     });
     setRunConfetti(true);
+
+    // Play Happy Birthday audio
+    // Ensure you have 'happy-birthday.mp3' in your 'public/audio/' folder
+    try {
+      const audio = new Audio('/audio/happy-birthday.mp3');
+      audio.play().catch(error => {
+        console.error("Error playing birthday audio:", error);
+        // You might want to inform the user that audio couldn't play,
+        // though for a non-critical feature, console logging might be enough.
+      });
+    } catch (error) {
+      console.error("Failed to create audio object:", error);
+    }
+  };
+
+  const convertToCsv = (data: SeatingChartData): string => {
+    const header = "Name,Table\n";
+    const rows = data.tables.flatMap(table => 
+      table.guests.map(guest => `"${guest.name.replace(/"/g, '""')}","${table.name.replace(/"/g, '""')}"`)
+    );
+    return header + rows.join("\n");
+  };
+
+  const handleDownloadCsv = () => {
+    if (currentSeatingData.tables.length === 0) {
+      toast({
+        title: "No Data to Download",
+        description: "The seating chart is currently empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const csvString = convertToCsv(currentSeatingData);
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "seating-chart.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "CSV Downloaded",
+      description: "Current seating assignments have been downloaded.",
+    });
   };
 
   return (
@@ -248,22 +295,26 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       )}
       
       <footer className="mt-8 pt-4 border-t border-border text-center text-muted-foreground text-sm space-y-2">
-        {canShowUploadButton && (
-          <div className="flex justify-center items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
-                  <UploadCloud className="mr-2 h-3 w-3" />
-                  Upload CSV (Name,Table)
-              </Button>
-              <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".csv"
-                  className="hidden"
-                  aria-hidden="true"
-              />
-          </div>
-        )}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2">
+            {canShowUploadButton && (
+                <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
+                    <UploadCloud className="mr-2 h-3 w-3" />
+                    Upload CSV (Name,Table)
+                </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="text-xs">
+                <Download className="mr-2 h-3 w-3" />
+                Download CSV
+            </Button>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".csv"
+                className="hidden"
+                aria-hidden="true"
+            />
+        </div>
         <p>Total Tables: {currentSeatingData.tables.length} | Total Guests: {totalGuests}</p>
         <p>Seating Savior &copy; {new Date().getFullYear()}</p>
       </footer>
@@ -272,5 +323,4 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
-
     
