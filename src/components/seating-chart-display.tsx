@@ -17,8 +17,8 @@ interface SeatingChartDisplayProps {
   data: SeatingChartData;
 }
 
-const UPLOAD_SECRET_KEY = 'uploadSecret';
-const UPLOAD_SECRET_VALUE = 'enableUpload789'; // This is your secret code word
+const UPLOAD_SECRET_KEY = 'upload';
+const UPLOAD_SECRET_VALUE = 'true'; // This is your secret code word
 
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(() => sortTableData(data));
