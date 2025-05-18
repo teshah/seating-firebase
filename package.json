@@ -45,6 +45,7 @@
     "geist": "^1.3.0",
     "genkit": "^1.6.2",
     "lucide-react": "^0.475.0",
+    "netlify-cli": "^21.4.2",
     "next": "^15.2.3",
     "nextn": "file:",
     "patch-package": "^8.0.0",
