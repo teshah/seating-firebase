@@ -1,0 +1,1 @@
+magick pink-garland-thin.png pink-garland-thin.png +append pink-bigger.png

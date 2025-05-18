@@ -10,7 +10,6 @@
         /*
           Letter paper size: 8.5in x 11in
           1 inch = 96 CSS pixels (approximately, for screen display)
-          3.5 inches = 336 CSS pixels
         */
 
         @media print {
@@ -35,6 +34,9 @@
                 justify-content: space-between;
                 align-items: center;
                 position: relative; /* For absolute positioning of decorations */
+            }
+            .banner-container img {
+                border: none;
             }
             .qr-code-area {
                 border: 2px dashed #9ca3af; /* Light gray dashed border for print guide if image fails */
@@ -71,15 +73,30 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Pushes title block to top, QR to bottom */
-            align-items: center;
+            justify-content: space-between; /* Pushes elements apart vertically */
+            align-items: center; /* Center children horizontally by default */
             position: relative; /* For absolute positioning of decorations */
         }
+
+        .banner-container {
+            width: 6.5in; /* As specified: 7in end - 1in start = 6in width */
+            height: 0.75in; /* Height of the banner */
+            margin-bottom: 0.25in; /* Space between banner and title text */
+            overflow: hidden; /* Ensure content doesn't spill */
+            align-self: center; /* UPDATED: Center the banner */
+            z-index: 10; /* Ensure banner is above hearts if overlapping */
+        }
+        .banner-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the area, may crop if aspect ratio differs */
+        }
+
         .title-text-container {
             text-align: center;
             z-index: 10;
             color: #1f2937;
-            height: 4.5in; /* Adjusted height for the top text block */
+            height: 3.5in; /* Adjusted height for the top text block */
             width: 100%; /* Take full width within parent's padding */
             display: flex;
             flex-direction: column;
@@ -88,22 +105,22 @@
         }
         .welcome-text {
             font-family: 'Dancing Script', cursive;
-            font-size: 5.5rem; /* Adjusted for new container height */
+            font-size: 4.5rem; /* Adjusted font size */
             font-weight: 700;
             line-height: 1.1;
             margin: 0;
         }
         .sub-welcome-text {
             font-family: 'Dancing Script', cursive;
-            font-size: 3.2rem; /* Adjusted for new container height */
-            color: lightpink;
+            font-size: 2.5rem; /* Adjusted font size */
+            /* color: lightpink; */
             font-weight: 700;
             line-height: 1;
             margin: 0;
         }
         .instruction-text {
             font-family: 'Inter', sans-serif;
-            font-size: 1.8rem; /* Adjusted (half of 3.2rem) */
+            font-size: 1.25rem; /* Adjusted font size (half of 2.5rem) */
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -111,9 +128,9 @@
             margin: 0;
         }
         .qr-code-area {
-            width: 4in;
-            height: 4in;
-            border: 1px dashed lightpink;
+            width: 4in; /* Width of QR code area */
+            height: 4in; /* Height of QR code area */
+            border: 1px dashed lightpink; /* User's existing style */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -123,6 +140,13 @@
             border-radius: 0.5rem;
             z-index: 10;
             overflow: hidden;
+            flex-shrink: 0; /* Prevent QR code area from shrinking */
+        }
+        .qr-code-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.4rem;
         }
         .print-button-container {
             position: fixed;
@@ -152,13 +176,12 @@
             line-height: 0.75in; /* Vertically center emoji in the container */
             text-align: center; /* Horizontally center emoji */
             opacity: 0.8; /* Opacity for the emoji */
-            z-index: 1; /* Behind text but visible */
-            /* color: #FF69B4; Removed to allow default emoji colors */
+            z-index: 1; /* Behind text and banner but visible */
         }
 
         /* Positioning decorations within the page-container's box, near corners.
-           These are relative to the padded content box.
-           So, 0.25in from the 1-inch margin line.
+           These are relative to the page-container element (which has 1in padding).
+           So, 0.75in from the edge of the page-container's border.
         */
         .heart-top-left { top: 0.75in; left: 0.75in; }
         .heart-top-right { top: 0.75in; right: 0.75in; }
@@ -173,8 +196,19 @@
     </div>
 
     <div class="page-container">
-        <div class="heart-decoration heart-top-left">💗</div>  <div class="heart-decoration heart-top-right">💗</div> <div class="heart-decoration heart-bottom-left"></div> <div class="heart-decoration heart-bottom-right"></div> <div class="title-text-container">
-            <div class="welcome-text">Welcome</div>
+        <div class="heart-decoration heart-top-left"></div>
+        <div class="heart-decoration heart-top-right"></div>
+        <div class="heart-decoration heart-bottom-left"></div>
+        <div class="heart-decoration heart-bottom-right"></div>
+        
+        <div class="banner-container">
+            <img src="pink-bigger.png" 
+                 alt="Event Banner"
+                 onerror="this.alt='Banner Image (6x0.75 inches) - Error loading placeholder'; this.parentElement.style.border='1px dashed #ccc'; this.parentElement.innerHTML = this.alt;">
+        </div>
+
+        <div class="title-text-container">
+            <div class="welcome-text">💗  Welcome  💗</div>
             <div class="sub-welcome-text">Your seat awaits!</div>
             <div class="instruction-text">Kindly scan to find your seat</div>
         </div>
@@ -182,7 +216,7 @@
         <div class="qr-code-area">
             <img src="qr-code.png"
                  alt="QR Code Placeholder - Replace with your QR code image"
-                 onerror="this.alt='QR Code Image (3.5x3.5 inches) - Error loading placeholder'; this.style.display='block'; this.parentElement.style.border='2px dashed #9ca3af';">
+                 onerror="this.alt='QR Code Image (4x4 inches) - Error loading placeholder'; this.style.display='block'; this.parentElement.style.border='2px dashed #9ca3af';">
         </div>
     </div>
 

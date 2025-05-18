@@ -113,7 +113,7 @@
         .qr-code-area {
             width: 4in;
             height: 4in;
-            border: 1px dashed lightpink;
+            border: 3px dashed lightpink;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -123,6 +123,12 @@
             border-radius: 0.5rem;
             z-index: 10;
             overflow: hidden;
+        }
+        .qr-code-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.4rem;
         }
         .print-button-container {
             position: fixed;
@@ -173,7 +179,7 @@
     </div>
 
     <div class="page-container">
-        <div class="heart-decoration heart-top-left">💗</div>  <div class="heart-decoration heart-top-right">💗</div> <div class="heart-decoration heart-bottom-left"></div> <div class="heart-decoration heart-bottom-right"></div> <div class="title-text-container">
+        <div class="heart-decoration heart-top-left"></div>  <div class="heart-decoration heart-top-right"></div> <div class="heart-decoration heart-bottom-left"></div> <div class="heart-decoration heart-bottom-right"></div> <div class="title-text-container">
             <div class="welcome-text">Welcome</div>
             <div class="sub-welcome-text">Your seat awaits!</div>
             <div class="instruction-text">Kindly scan to find your seat</div>
