@@ -27,7 +27,7 @@
                 width: 8.5in;
                 height: 11in;
                 margin: 0;
-                padding: 0.75in; /* Standard margin */
+                padding: 1in; /* Standard margin to 1 inch */
                 box-sizing: border-box;
                 border: none; /* Remove screen border for print */
                 display: flex;
@@ -67,7 +67,7 @@
             background-color: white;
             border: 1px solid #d1d5db;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 0.75in; /* Standard margin for content */
+            padding: 1in; /* Standard margin for content to 1 inch */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -79,7 +79,7 @@
             text-align: center;
             z-index: 10;
             color: #1f2937;
-            height: 4.75in; /* Height for the top text block */
+            height: 4.25in; /* Adjusted height for the top text block */
             width: 100%; /* Take full width within parent's padding */
             display: flex;
             flex-direction: column;
@@ -88,21 +88,21 @@
         }
         .welcome-text {
             font-family: 'Dancing Script', cursive;
-            font-size: 6rem;
+            font-size: 5.5rem; /* Adjusted for new container height */
             font-weight: 700;
             line-height: 1.1;
             margin: 0;
         }
         .sub-welcome-text {
             font-family: 'Dancing Script', cursive;
-            font-size: 3.5rem;
+            font-size: 3.2rem; /* Adjusted for new container height */
             font-weight: 700;
             line-height: 1;
             margin: 0;
         }
         .instruction-text {
             font-family: 'Inter', sans-serif;
-            font-size: 1.75rem;
+            font-size: 1.6rem; /* Adjusted (half of 3.2rem) */
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -158,14 +158,17 @@
             text-align: center; /* Horizontally center emoji */
             opacity: 0.8; /* Opacity for the emoji */
             z-index: 1; /* Behind text but visible */
-            color: #FF69B4; /* Hot pink color for the heart emoji, can be adjusted */
+            /* color: #FF69B4; Removed to allow default emoji colors */
         }
 
-        /* Positioning decorations within the page-container's box, near corners */
-        .heart-top-left { top: 0.25in; left: 0.25in; }
-        .heart-top-right { top: 0.25in; right: 0.25in; }
-        .heart-bottom-left { bottom: 0.25in; left: 0.25in; }
-        .heart-bottom-right { bottom: 0.25in; right: 0.25in; }
+        /* Positioning decorations within the page-container's box, near corners.
+           These are relative to the padded content box.
+           So, 0.25in from the 1-inch margin line.
+        */
+        .heart-top-left { top: 0.75in; left: 0.75in; }
+        .heart-top-right { top: 0.75in; right: 0.75in; }
+        .heart-bottom-left { bottom: 0.75in; left: 0.75in; }
+        .heart-bottom-right { bottom: 0.75in; right: 0.75in; }
 
     </style>
 </head>
@@ -175,12 +178,7 @@
     </div>
 
     <div class="page-container">
-        <div class="heart-decoration heart-top-left">❤️</div>
-        <div class="heart-decoration heart-top-right">❤️</div>
-        <div class="heart-decoration heart-bottom-left">❤️</div>
-        <div class="heart-decoration heart-bottom-right">❤️</div>
-
-        <div class="title-text-container">
+        <div class="heart-decoration heart-top-left">❤️</div>  <div class="heart-decoration heart-top-right">❤️</div> <div class="heart-decoration heart-bottom-left">💚</div> <div class="heart-decoration heart-bottom-right">💚</div> <div class="title-text-container">
             <div class="welcome-text">Welcome</div>
             <div class="sub-welcome-text">Your seat awaits!</div>
             <div class="instruction-text">Kindly scan to find your seat</div>
