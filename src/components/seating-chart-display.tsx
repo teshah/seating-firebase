@@ -3,12 +3,13 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation'; // Added for URL params
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
-import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils'; // Updated import
+import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Info, UploadCloud, DownloadCloud } from 'lucide-react';
+import { Search, Users, Info, UploadCloud } from 'lucide-react'; // Removed DownloadCloud
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,8 +17,11 @@ interface SeatingChartDisplayProps {
   data: SeatingChartData;
 }
 
+const UPLOAD_SECRET_KEY = 'uploadSecret';
+const UPLOAD_SECRET_VALUE = 'enableUpload789'; // This is your secret code word
+
 const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
-  const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(() => sortTableData(data)); // Sort initial data
+  const [currentSeatingData, setCurrentSeatingData] = useState<SeatingChartData>(() => sortTableData(data));
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedGuestName, setHighlightedGuestName] = useState<string | null>(null);
   
@@ -26,10 +30,13 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+
+  const canShowUploadButton = useMemo(() => {
+    return searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE;
+  }, [searchParams]);
 
   useEffect(() => {
-    // Data prop might change if loaded asynchronously or from a new source after initial mount
-    // Re-sort and update if the incoming `data` prop changes identity
     setCurrentSeatingData(sortTableData(data));
   }, [data]);
   
@@ -37,7 +44,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     if (!searchTerm.trim()) {
       setHighlightedGuestName(null);
       setFoundGuestsDetails([]);
-      setDisplayedTables(currentSeatingData.tables); // Assumes currentSeatingData.tables is already sorted
+      setDisplayedTables(currentSeatingData.tables);
       return;
     }
 
@@ -97,8 +104,8 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         const text = e.target?.result as string;
         const parsedData = parseSeatingChartCsv(text);
         if (parsedData && parsedData.tables.length > 0 && parsedData.tables.length <= 20) {
-          setCurrentSeatingData(sortTableData(parsedData)); // Apply sorting
-          setSearchTerm(''); // Reset search term
+          setCurrentSeatingData(sortTableData(parsedData));
+          setSearchTerm('');
           toast({
             title: "CSV Uploaded Successfully",
             description: "Seating chart has been updated with the CSV data.",
@@ -127,54 +134,10 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       }
       reader.readAsText(file);
       if(fileInputRef.current) {
-        fileInputRef.current.value = ""; // Reset file input
+        fileInputRef.current.value = "";
       }
     }
   };
-
-  const handleDownloadCsv = () => {
-    if (currentSeatingData.tables.length === 0) {
-      toast({
-        title: "No Data to Download",
-        description: "The seating chart is currently empty.",
-        variant: "default",
-      });
-      return;
-    }
-
-    let csvContent = "Name,Table\n"; // CSV Header
-    currentSeatingData.tables.forEach(table => {
-      table.guests.forEach(guest => {
-        const guestName = `"${guest.name.replace(/"/g, '""')}"`; // Escape double quotes
-        const tableName = `"${table.name.replace(/"/g, '""')}"`; // Escape double quotes
-        csvContent += `${guestName},${tableName}\n`;
-      });
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", "seating_chart_assignments.csv");
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast({
-        title: "CSV Download Started",
-        description: "Your seating chart data is being downloaded.",
-      });
-    } else {
-       toast({
-        title: "Download Failed",
-        description: "Your browser does not support automatic downloads.",
-        variant: "destructive",
-      });
-    }
-  };
-
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
@@ -248,24 +211,22 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       )}
       
       <footer className="mt-8 pt-4 border-t border-border text-center text-muted-foreground text-sm space-y-2">
-        <div className="flex justify-center items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
-                <UploadCloud className="mr-2 h-3 w-3" />
-                Upload CSV (Name,Table)
-            </Button>
-            <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".csv"
-                className="hidden"
-                aria-hidden="true"
-            />
-             <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="text-xs">
-                <DownloadCloud className="mr-2 h-3 w-3" />
-                Download CSV
-            </Button>
-        </div>
+        {canShowUploadButton && (
+          <div className="flex justify-center items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleUploadClick} className="text-xs">
+                  <UploadCloud className="mr-2 h-3 w-3" />
+                  Upload CSV (Name,Table)
+              </Button>
+              <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".csv"
+                  className="hidden"
+                  aria-hidden="true"
+              />
+          </div>
+        )}
         <p>Total Tables: {currentSeatingData.tables.length} | Total Guests: {totalGuests}</p>
         <p>Seating Savior &copy; {new Date().getFullYear()}</p>
       </footer>
@@ -274,3 +235,5 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
+
+    
