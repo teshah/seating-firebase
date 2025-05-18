@@ -33,6 +33,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [displayedTables, setDisplayedTables] = useState<TableType[]>(() => currentSeatingData.tables);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null); // Ref for the audio element
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -50,6 +51,17 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   useEffect(() => {
     setCurrentSeatingData(sortTableData(data));
   }, [data]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    if (typeof window !== 'undefined') {
+      handleResize(); // Set initial size
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
   
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -278,6 +290,12 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             </Button>
           )}
         </div>
+        {canShowWishButton && (
+          <Button onClick={handleWishClick} variant="outline" size="sm" className="text-xs">
+            {isPlayingAudio ? <Square className="mr-2 h-3 w-3" /> : <Gift className="mr-2 h-3 w-3" /> }
+            {isPlayingAudio ? 'Stop Wishing' : 'Wish Happy Birthday!'}
+          </Button>
+        )}
       </div>
 
       {searchTerm && foundGuestsDetails.length > 0 && (
