@@ -13,11 +13,6 @@
           3.5 inches = 336 CSS pixels
         */
 
-        /* Base SVG for heart, to be reused */
-        .flower-svg-def { /* Keeping class name for simplicity, though it's now a heart */
-            display: none; /* Hide the definition */
-        }
-
         @media print {
             body {
                 margin: 0;
@@ -50,7 +45,7 @@
             .no-print {
                 display: none; /* Hide elements not meant for printing */
             }
-            .flower-decoration { /* Keeping class name, now represents heart decoration */
+            .heart-decoration {
                 /* Styles for decorations in print mode are the same as screen mode */
             }
         }
@@ -107,7 +102,7 @@
         }
         .instruction-text {
             font-family: 'Inter', sans-serif;
-            font-size: 1.25rem;
+            font-size: 1.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -153,51 +148,37 @@
             background-color: #2563eb;
         }
 
-        /* Decoration Styles (formerly flower, now heart) */
-        .flower-decoration { /* Keeping class name for simplicity */
+        /* Decoration Styles for Heart Emoji */
+        .heart-decoration {
             position: absolute;
-            width: 0.75in; /* Size of the decoration */
+            width: 0.75in; /* Container size for the emoji */
             height: 0.75in;
-            opacity: 0.7; /* Adjusted opacity slightly for better visibility of green */
+            font-size: 0.6in; /* Size of the emoji itself, adjust as needed */
+            line-height: 0.75in; /* Vertically center emoji in the container */
+            text-align: center; /* Horizontally center emoji */
+            opacity: 0.8; /* Opacity for the emoji */
             z-index: 1; /* Behind text but visible */
+            color: #FF69B4; /* Hot pink color for the heart emoji, can be adjusted */
         }
-        .flower-decoration svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+
         /* Positioning decorations within the page-container's box, near corners */
-        .flower-top-left { top: 0.25in; left: 0.25in; }
-        .flower-top-right { top: 0.25in; right: 0.25in; transform: scaleX(-1); /* Flip for symmetry */}
-        .flower-bottom-left { bottom: 0.25in; left: 0.25in; transform: scaleY(-1); /* Flip for symmetry */}
-        .flower-bottom-right { bottom: 0.25in; right: 0.25in; transform: scaleX(-1) scaleY(-1); /* Flip for symmetry */}
+        .heart-top-left { top: 0.25in; left: 0.25in; }
+        .heart-top-right { top: 0.25in; right: 0.25in; }
+        .heart-bottom-left { bottom: 0.25in; left: 0.25in; }
+        .heart-bottom-right { bottom: 0.25in; right: 0.25in; }
 
     </style>
 </head>
 <body>
-    <svg class="flower-svg-def" aria-hidden="true">
-        <symbol id="svg-flower" viewBox="0 0 50 50">
-            <path d="M25,10 C15,10 10,20 10,25 C10,35 25,45 25,45 C25,45 40,35 40,25 C40,20 35,10 25,10 Z" fill="#90EE90"/>
-            </symbol>
-    </svg>
-
     <div class="print-button-container no-print">
         <button onclick="window.print()" class="print-button">Print Sign</button>
     </div>
 
     <div class="page-container">
-        <div class="flower-decoration flower-top-left">
-            <svg><use xlink:href="#svg-flower"/></svg>
-        </div>
-        <div class="flower-decoration flower-top-right">
-            <svg><use xlink:href="#svg-flower"/></svg>
-        </div>
-        <div class="flower-decoration flower-bottom-left">
-            <svg><use xlink:href="#svg-flower"/></svg>
-        </div>
-        <div class="flower-decoration flower-bottom-right">
-            <svg><use xlink:href="#svg-flower"/></svg>
-        </div>
+        <div class="heart-decoration heart-top-left">❤️</div>
+        <div class="heart-decoration heart-top-right">❤️</div>
+        <div class="heart-decoration heart-bottom-left">❤️</div>
+        <div class="heart-decoration heart-bottom-right">❤️</div>
 
         <div class="title-text-container">
             <div class="welcome-text">Welcome</div>
