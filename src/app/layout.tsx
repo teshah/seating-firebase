@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
+import PwaLoader from '@/components/pwa-loader'; // Import the PWA loader
 
 export const metadata: Metadata = {
   title: "Jaanvi's Sweet Seats",
@@ -27,7 +28,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
+  userScalable: false, // Often set for PWA-like experiences
 };
 
 export default function RootLayout({
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={GeistSans.variable}>
       <body className="antialiased">
+        <PwaLoader /> {/* Add the PWA loader component here */}
         {children}
       </body>
     </html>
