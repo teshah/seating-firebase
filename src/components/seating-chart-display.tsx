@@ -1,10 +1,9 @@
-
 "use client";
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-// import Confetti from 'react-confetti'; // Added for confetti effect
+import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
@@ -39,6 +38,8 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [canShowUploadButton, setCanShowUploadButton] = useState(false);
   const [canShowWishButton, setCanShowWishButton] = useState(false);
   const [runConfetti, setRunConfetti] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
@@ -96,6 +97,15 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     setHighlightedGuestName(guestNameToHighlight);
   }, [currentSeatingData.tables, searchTerm]);
 
+  // Cleanup audio on component unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const totalGuests = useMemo(() => {
     return currentSeatingData.tables.reduce((sum, table) => sum + table.guests.length, 0);
@@ -149,24 +159,49 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   };
 
   const handleWishBirthday = () => {
+    if (isAudioPlaying) return; // Prevent multiple plays
+
     toast({
       title: "🎉 Happy Birthday! 🎉",
       description: "Hope you have a fantastic day!",
-      duration: 5000, // Keep toast longer for confetti
+      duration: 5000,
     });
     setRunConfetti(true);
+    setIsAudioPlaying(true);
 
-    // Play Happy Birthday audio
-    // Ensure you have 'happy-birthday.mp3' in your 'public/audio/' folder
     try {
       const audio = new Audio('/audio/happy-birthday.mp3');
+      audioRef.current = audio;
+      
+      // Stop audio and cleanup after 15 seconds
+      const stopTimeout = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          setRunConfetti(false);
+          setIsAudioPlaying(false);
+          audioRef.current = null;
+        }
+      }, 15500);
+
+      audio.addEventListener('ended', () => {
+        clearTimeout(stopTimeout);
+        setRunConfetti(false);
+        setIsAudioPlaying(false);
+        audioRef.current = null;
+      });
+
       audio.play().catch(error => {
+        clearTimeout(stopTimeout);
         console.error("Error playing birthday audio:", error);
-        // You might want to inform the user that audio couldn't play,
-        // though for a non-critical feature, console logging might be enough.
+        setRunConfetti(false);
+        setIsAudioPlaying(false);
+        audioRef.current = null;
       });
     } catch (error) {
       console.error("Failed to create audio object:", error);
+      setRunConfetti(false);
+      setIsAudioPlaying(false);
     }
   };
 
@@ -206,15 +241,14 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {/* {runConfetti && (
+      {runConfetti && (
         <Confetti
           run={runConfetti}
-          recycle={false}
+          recycle={true}
           numberOfPieces={250}
-          onConfettiComplete={() => setRunConfetti(false)}
-          className="!fixed" // Ensure it covers the whole viewport
+          className="!fixed"
         />
-      )} */}
+      )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
           <div className="relative w-full sm:flex-grow">
@@ -229,9 +263,15 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             />
           </div>
           {canShowWishButton && (
-            <Button onClick={handleWishBirthday} variant="outline" size="default" className="w-full sm:w-auto flex-shrink-0">
+            <Button 
+              onClick={handleWishBirthday} 
+              variant="outline" 
+              size="default" 
+              className="w-full sm:w-auto flex-shrink-0"
+              disabled={isAudioPlaying}
+            >
               <PartyPopper className="mr-2 h-5 w-5" />
-              Wish Happy Birthday
+              {isAudioPlaying ? "Playing..." : "Wish Happy Birthday"}
             </Button>
           )}
         </div>
