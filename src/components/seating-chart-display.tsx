@@ -38,7 +38,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   const [canShowUploadButton, setCanShowUploadButton] = useState(false);
   const [canShowWishButton, setCanShowWishButton] = useState(false);
-  const [runConfetti, setRunConfetti] = useState(false);
+  // const [runConfetti, setRunConfetti] = useState(false);
 
   useEffect(() => {
     setCanShowUploadButton(searchParams.get(UPLOAD_SECRET_KEY) === UPLOAD_SECRET_VALUE);
@@ -154,7 +154,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
       description: "Hope you have a fantastic day!",
       duration: 5000, // Keep toast longer for confetti
     });
-    setRunConfetti(true);
+    // setRunConfetti(true);
 
     // Play Happy Birthday audio
     // Ensure you have 'happy-birthday.mp3' in your 'public/audio/' folder
@@ -206,8 +206,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {/*
-      {runConfetti && (
+      {/* {runConfetti && (
         <Confetti
           run={runConfetti}
           recycle={false}
@@ -215,8 +214,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
           onConfettiComplete={() => setRunConfetti(false)}
           className="!fixed" // Ensure it covers the whole viewport
         />
-      )}
-      */}
+      )} */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
           <div className="relative w-full sm:flex-grow">
