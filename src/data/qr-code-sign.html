@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Find your Seat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /*
+          Letter paper size: 8.5in x 11in
+          1 inch = 96 CSS pixels (approximately, for screen display)
+          3.5 inches = 336 CSS pixels
+        */
+
+        /* Base SVG for heart, to be reused */
+        .flower-svg-def { /* Keeping class name for simplicity, though it's now a heart */
+            display: none; /* Hide the definition */
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                width: 8.5in;
+                height: 11in;
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact; /* Ensures colors and backgrounds print */
+                print-color-adjust: exact;
+            }
+            .page-container {
+                width: 8.5in;
+                height: 11in;
+                margin: 0;
+                padding: 0.75in; /* Standard margin */
+                box-sizing: border-box;
+                border: none; /* Remove screen border for print */
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                position: relative; /* For absolute positioning of decorations */
+            }
+            .qr-code-area {
+                border: 2px dashed #9ca3af; /* Light gray dashed border for print guide if image fails */
+            }
+            .qr-code-area img {
+                border: none; /* Ensure no extra border on image for print */
+            }
+            .no-print {
+                display: none; /* Hide elements not meant for printing */
+            }
+            .flower-decoration { /* Keeping class name, now represents heart decoration */
+                /* Styles for decorations in print mode are the same as screen mode */
+            }
+        }
+
+        /* Screen Styles for Preview */
+        body {
+            font-family: 'Inter', sans-serif; /* Default font */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .page-container {
+            width: 8.5in;
+            height: 11in;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.75in; /* Standard margin for content */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Pushes title block to top, QR to bottom */
+            align-items: center;
+            position: relative; /* For absolute positioning of decorations */
+        }
+        .title-text-container {
+            text-align: center;
+            z-index: 10;
+            color: #1f2937;
+            height: 4.75in; /* Height for the top text block */
+            width: 100%; /* Take full width within parent's padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around; /* Distribute the three text lines evenly */
+            align-items: center;
+        }
+        .welcome-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 0;
+        }
+        .sub-welcome-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin: 0;
+        }
+        .instruction-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .qr-code-area {
+            width: 3.5in;
+            height: 3.5in;
+            border: 2px dashed #cccccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #6b7280;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            z-index: 10;
+            overflow: hidden;
+        }
+        .qr-code-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.4rem;
+        }
+        .print-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .print-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .print-button:hover {
+            background-color: #2563eb;
+        }
+
+        /* Decoration Styles (formerly flower, now heart) */
+        .flower-decoration { /* Keeping class name for simplicity */
+            position: absolute;
+            width: 0.75in; /* Size of the decoration */
+            height: 0.75in;
+            opacity: 0.7; /* Adjusted opacity slightly for better visibility of green */
+            z-index: 1; /* Behind text but visible */
+        }
+        .flower-decoration svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        /* Positioning decorations within the page-container's box, near corners */
+        .flower-top-left { top: 0.25in; left: 0.25in; }
+        .flower-top-right { top: 0.25in; right: 0.25in; transform: scaleX(-1); /* Flip for symmetry */}
+        .flower-bottom-left { bottom: 0.25in; left: 0.25in; transform: scaleY(-1); /* Flip for symmetry */}
+        .flower-bottom-right { bottom: 0.25in; right: 0.25in; transform: scaleX(-1) scaleY(-1); /* Flip for symmetry */}
+
+    </style>
+</head>
+<body>
+    <svg class="flower-svg-def" aria-hidden="true">
+        <symbol id="svg-flower" viewBox="0 0 50 50">
+            <path d="M25,10 C15,10 10,20 10,25 C10,35 25,45 25,45 C25,45 40,35 40,25 C40,20 35,10 25,10 Z" fill="#90EE90"/>
+            </symbol>
+    </svg>
+
+    <div class="print-button-container no-print">
+        <button onclick="window.print()" class="print-button">Print Sign</button>
+    </div>
+
+    <div class="page-container">
+        <div class="flower-decoration flower-top-left">
+            <svg><use xlink:href="#svg-flower"/></svg>
+        </div>
+        <div class="flower-decoration flower-top-right">
+            <svg><use xlink:href="#svg-flower"/></svg>
+        </div>
+        <div class="flower-decoration flower-bottom-left">
+            <svg><use xlink:href="#svg-flower"/></svg>
+        </div>
+        <div class="flower-decoration flower-bottom-right">
+            <svg><use xlink:href="#svg-flower"/></svg>
+        </div>
+
+        <div class="title-text-container">
+            <div class="welcome-text">Welcome</div>
+            <div class="sub-welcome-text">Your seat awaits!</div>
+            <div class="instruction-text">Kindly scan to find your seat</div>
+        </div>
+
+        <div class="qr-code-area">
+            <img src="https://tmpfiles.org/dl/28701468/qr-code.png"
+                 alt="QR Code Placeholder - Replace with your QR code image"
+                 onerror="this.alt='QR Code Image (3.5x3.5 inches) - Error loading placeholder'; this.style.display='block'; this.parentElement.style.border='2px dashed #9ca3af';">
+        </div>
+    </div>
+
+</body>
+</html>
