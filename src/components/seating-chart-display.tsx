@@ -3,7 +3,7 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
@@ -36,12 +36,14 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null); // Ref for the audio element
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [canShowUploadButton, setCanShowUploadButton] = useState(false);
   const [canShowWishButton, setCanShowWishButton] = useState(false);
   const [runConfetti, setRunConfetti] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  // Removed duplicate audioRef declaration here
+  
 
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 }); // For confetti
 
@@ -56,7 +58,9 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      if (typeof window !== 'undefined') {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      }
     };
     if (typeof window !== 'undefined') {
       handleResize(); // Set initial size
@@ -257,9 +261,20 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     });
   };
 
+  const handleCopyrightToggle = () => {
+    const currentParams = new URLSearchParams(searchParams.toString());
+    if (currentParams.get(WISH_PARAM_KEY) === WISH_PARAM_VALUE) {
+      currentParams.delete(WISH_PARAM_KEY);
+    } else {
+      currentParams.set(WISH_PARAM_KEY, WISH_PARAM_VALUE);
+    }
+    const newQueryString = currentParams.toString();
+    router.push(pathname + (newQueryString ? `?${newQueryString}` : ''));
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {runConfetti && typeof window !== 'undefined' && ( // Ensure window is defined for Confetti
+      {typeof window !== 'undefined' && runConfetti && ( // Ensure window is defined for Confetti
         <Confetti
           width={windowSize.width}
           height={windowSize.height}
@@ -370,7 +385,20 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             />
         </div>
         <p>Total Tables: {currentSeatingData.tables.length} | Total Guests: {totalGuests}</p>
-        <p>Seating Savior &copy; {new Date().getFullYear()}</p>
+        <p
+          onClick={handleCopyrightToggle}
+          className="cursor-pointer hover:underline"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e: React.KeyboardEvent<HTMLParagraphElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleCopyrightToggle();
+            }
+          }}
+        >
+          Seating Savior &copy; {new Date().getFullYear()}
+        </p>
       </footer>
     </div>
   );
