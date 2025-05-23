@@ -44,7 +44,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header appName="Jaanvi's Sweet Seats" />
+      <Suspense fallback={<div className="h-16 bg-card shadow-md"></div>}> {/* Fallback for Header */}
+        <Header appName="Jaanvi's Sweet Seats" />
+      </Suspense>
       <main className="flex-grow container mx-auto px-0 sm:px-4 py-0 sm:py-8">
         <Suspense fallback={<div className="text-center p-8">Loading seating chart...</div>}>
           <SeatingChartDisplay data={initialData} />
