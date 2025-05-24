@@ -57,14 +57,14 @@ const BirthdayCountdownTimer: React.FC = () => {
   if (!timeLeft) {
     return (
       <div className={`${baseClasses} bg-accent/20 border-accent text-accent-foreground font-semibold`}>
-        It's Party Time!
+        It's Showtime!
       </div>
     );
   }
 
   return (
     <div className={`${baseClasses} bg-card border-border text-card-foreground`}>
-      {timeLeft.hours}h {timeLeft.minutes}m until party!
+      {timeLeft.hours}h {timeLeft.minutes}m until showtime!
     </div>
   );
 };
