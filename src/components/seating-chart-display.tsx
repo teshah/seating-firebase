@@ -4,7 +4,7 @@
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import Confetti from 'react-confetti'; // Added for confetti effect
+// import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
@@ -199,7 +199,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     } else {
       // Start playing
       toast({
-        title: "🎉 Happy Birthday! 🎉",
+        title: "🎉 Happy Birthday, Jaanvi! 🎉",
         description: "Hope you have a fantastic day!",
         duration: 5000,
       });
@@ -274,7 +274,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {typeof window !== 'undefined' && runConfetti && ( // Ensure window is defined for Confetti
+      {/* typeof window !== 'undefined' && runConfetti && ( // Ensure window is defined for Confetti
         <Confetti
           width={windowSize.width}
           height={windowSize.height}
@@ -283,7 +283,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
           numberOfPieces={250}
           className="!fixed" // Ensure confetti covers the whole screen
         />
-      )}
+      )*/}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
           <div className="relative w-full sm:flex-grow">
@@ -305,7 +305,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
               className="w-full sm:w-auto flex-shrink-0"
             >
               {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
-              {isAudioPlaying ? "Stop Birthday Song" : "Wish Happy Birthday"}
+              {isAudioPlaying ? "Stop Birthday Song" : "Wish Jaanvi a Happy Birthday!"}
             </Button>
           )}
         </div>
@@ -374,7 +374,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                     Upload CSV (Name,Table)
                 </Button>
             )}
-           {/* Download button removed as per request */}
             <input
                 type="file"
                 ref={fileInputRef}
@@ -410,3 +409,4 @@ export default SeatingChartDisplay;
     
 
     
+
