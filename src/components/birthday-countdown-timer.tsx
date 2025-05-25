@@ -9,10 +9,10 @@ interface TimeLeft {
   seconds: number;
 }
 
-// Target date: May 25, 2025, 7:10 PM ET.
-// ET is EDT (UTC-4) in May. So, 19:10 ET is 23:10 UTC.
-const TARGET_DATE_UTC = new Date(Date.UTC(2025, 4, 25, 23, 10, 0)); // Month 4 is May
-const FORMATTED_TARGET_DATE_ET = "(05/25 07:10 PM ET)";
+// Target date: May 25, 2025, 7:00 PM ET.
+// ET is EDT (UTC-4) in May. So, 19:00 ET is 23:00 UTC.
+const TARGET_DATE_UTC = new Date(Date.UTC(2025, 4, 25, 23, 0, 0)); // Month 4 is May, 23 hours is 7 PM ET
+const FORMATTED_TARGET_DATE_ET = "(05/25 07:00 PM ET)";
 
 const calculateTimeLeft = (): TimeLeft | null => {
   const difference = +TARGET_DATE_UTC - +new Date(); // `+` converts date to number (milliseconds)
