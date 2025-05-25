@@ -281,7 +281,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                 {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
                 {isAudioPlaying ? "Stop Birthday Song" : "Wish Jaanvi a Happy Birthday!"}
               </Button>
-              <BirthdayCountdownTimer />
+              {isAudioPlaying && <BirthdayCountdownTimer />}
             </div>
           )}
         </div>
