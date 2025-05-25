@@ -6,12 +6,13 @@ import { useState, useEffect, type CSSProperties } from 'react';
 interface TimeLeft {
   hours: number;
   minutes: number;
+  seconds: number;
 }
 
 // Target date: May 25, 2025, 7:10 PM ET.
 // ET is EDT (UTC-4) in May. So, 19:10 ET is 23:10 UTC.
 const TARGET_DATE_UTC = new Date(Date.UTC(2025, 4, 25, 23, 10, 0)); // Month 4 is May
-const FORMATTED_TARGET_DATE_ET = "(05/25 19:10 ET)";
+const FORMATTED_TARGET_DATE_ET = "(05/25 07:10 PM ET)";
 
 const calculateTimeLeft = (): TimeLeft | null => {
   const difference = +TARGET_DATE_UTC - +new Date(); // `+` converts date to number (milliseconds)
@@ -19,12 +20,14 @@ const calculateTimeLeft = (): TimeLeft | null => {
     return null; // Countdown finished
   }
 
-  const totalHours = Math.floor(difference / (1000 * 60 * 60));
-  const minutes = Math.floor((difference / 1000 / 60) % 60);
+  const hours = Math.floor(difference / (1000 * 60 * 60));
+  const minutes = Math.floor((difference / (1000 * 60)) % 60);
+  const seconds = Math.floor((difference / 1000) % 60);
 
   return {
-    hours: totalHours,
-    minutes: minutes,
+    hours,
+    minutes,
+    seconds,
   };
 };
 
@@ -38,7 +41,7 @@ const BirthdayCountdownTimer: React.FC = () => {
 
     const timerId = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
-    }, 60000); // Update every minute
+    }, 1000); // Update every second
 
     return () => clearInterval(timerId); // Cleanup interval on component unmount
   }, []);
@@ -66,7 +69,7 @@ const BirthdayCountdownTimer: React.FC = () => {
 
   return (
     <div className={`${baseClasses} bg-card border-border text-card-foreground`}>
-      {timeLeft.hours}h {timeLeft.minutes}m until showtime! {FORMATTED_TARGET_DATE_ET}
+      {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s until showtime! {FORMATTED_TARGET_DATE_ET}
     </div>
   );
 };
