@@ -11,6 +11,7 @@ interface TimeLeft {
 // Target date: May 25, 2025, 7:10 PM ET.
 // ET is EDT (UTC-4) in May. So, 19:10 ET is 23:10 UTC.
 const TARGET_DATE_UTC = new Date(Date.UTC(2025, 4, 25, 23, 10, 0)); // Month 4 is May
+const FORMATTED_TARGET_DATE_ET = "(05/25 19:10 ET)";
 
 const calculateTimeLeft = (): TimeLeft | null => {
   const difference = +TARGET_DATE_UTC - +new Date(); // `+` converts date to number (milliseconds)
@@ -42,11 +43,12 @@ const BirthdayCountdownTimer: React.FC = () => {
     return () => clearInterval(timerId); // Cleanup interval on component unmount
   }, []);
 
-  const baseClasses = "text-sm p-2 border rounded-md shadow-sm whitespace-nowrap h-10 flex items-center justify-center min-w-[160px]";
+  // Adjusted classes for width consistency with the button.
+  // Removed min-w-[160px], added w-full sm:w-auto flex-shrink-0
+  const baseClasses = "text-sm p-2 border rounded-md shadow-sm whitespace-nowrap h-10 flex items-center justify-center w-full sm:w-auto flex-shrink-0";
 
   if (!isMounted) {
     // Placeholder during SSR or before hydration
-    // Using a div with min-height/min-width to reduce layout shift.
     return (
       <div className={`${baseClasses} bg-muted text-muted-foreground`} aria-live="polite">
         Loading countdown...
@@ -64,7 +66,7 @@ const BirthdayCountdownTimer: React.FC = () => {
 
   return (
     <div className={`${baseClasses} bg-card border-border text-card-foreground`}>
-      {timeLeft.hours}h {timeLeft.minutes}m until showtime!
+      {timeLeft.hours}h {timeLeft.minutes}m until showtime! {FORMATTED_TARGET_DATE_ET}
     </div>
   );
 };
