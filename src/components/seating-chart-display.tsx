@@ -4,7 +4,7 @@
 import type { FC } from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import Confetti from 'react-confetti'; // Added for confetti effect
+// import Confetti from 'react-confetti'; // Added for confetti effect
 import type { SeatingChartData, Table as TableType, Guest } from '@/types/seating';
 import { parseSeatingChartCsv, sortTableData } from '@/lib/seating-utils';
 import TableCard from './table-card';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Users, Info, UploadCloud, PartyPopper, Download, Square, Gift } from 'lucide-react'; // Added PartyPopper, Download, Square, Gift
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import BirthdayCountdownTimer from './birthday-countdown-timer'; // Import the new component
 
 interface SeatingChartDisplayProps {
   data: SeatingChartData;
@@ -33,7 +34,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
   const [displayedTables, setDisplayedTables] = useState<TableType[]>(() => currentSeatingData.tables);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null); // Ref for the audio element
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -124,7 +125,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     }
   };
 
-  // Cleanup audio on component unmount
   useEffect(() => {
     const currentAudio = audioRef.current;
     return () => {
@@ -188,18 +188,16 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   const handleWishBirthday = () => {
     if (isAudioPlaying) {
-      // Stop playing
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
-        audioRef.current.removeEventListener('ended', handleAudioEnded); // Clean up listener
+        audioRef.current.removeEventListener('ended', handleAudioEnded);
       }
       setRunConfetti(false);
       setIsAudioPlaying(false);
     } else {
-      // Start playing
       toast({
-        title: "🎉 Happy Birthday! 🎉",
+        title: "🎉 Happy Birthday, Jaanvi! 🎉",
         description: "Hope you have a fantastic day!",
         duration: 5000,
       });
@@ -217,6 +215,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
         }
       }
       
+      audioRef.current.removeEventListener('ended', handleAudioEnded); // Ensure only one listener
       audioRef.current.addEventListener('ended', handleAudioEnded);
       audioRef.current.play().catch(error => {
         console.error("Error playing birthday audio:", error);
@@ -235,32 +234,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
     return header + rows.join("\n");
   };
 
-  const handleDownloadCsv = () => {
-    if (currentSeatingData.tables.length === 0) {
-      toast({
-        title: "No Data to Download",
-        description: "The seating chart is currently empty.",
-        variant: "destructive",
-      });
-      return;
-    }
-    const csvString = convertToCsv(currentSeatingData);
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "seating-chart.csv");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "CSV Downloaded",
-      description: "Current seating assignments have been downloaded.",
-    });
-  };
-
   const handleCopyrightToggle = () => {
     const currentParams = new URLSearchParams(searchParams.toString());
     if (currentParams.get(WISH_PARAM_KEY) === WISH_PARAM_VALUE) {
@@ -274,7 +247,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      {typeof window !== 'undefined' && runConfetti && ( // Ensure window is defined for Confetti
+      {/* typeof window !== 'undefined' && runConfetti && ( // Ensure window is defined for Confetti
         <Confetti
           width={windowSize.width}
           height={windowSize.height}
@@ -283,7 +256,7 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
           numberOfPieces={250}
           className="!fixed" // Ensure confetti covers the whole screen
         />
-      )}
+      )*/}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
           <div className="relative w-full sm:flex-grow">
@@ -298,15 +271,18 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
             />
           </div>
           {canShowWishButton && (
-            <Button 
-              onClick={handleWishBirthday} 
-              variant="outline" 
-              size="default" 
-              className="w-full sm:w-auto flex-shrink-0"
-            >
-              {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
-              {isAudioPlaying ? "Stop Birthday Song" : "Wish Happy Birthday"}
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap"> {/* Flex container for button and timer */}
+              <Button 
+                onClick={handleWishBirthday} 
+                variant="outline" 
+                size="default" 
+                className="w-full xxs:w-auto flex-shrink-0" /* Adjusted for very small screens */
+              >
+                {isAudioPlaying ? <Square className="mr-2 h-5 w-5" /> : <PartyPopper className="mr-2 h-5 w-5" />}
+                {isAudioPlaying ? "Stop Birthday Song" : "Wish Jaanvi a Happy Birthday!"}
+              </Button>
+              <BirthdayCountdownTimer />
+            </div>
           )}
         </div>
       </div>
@@ -374,7 +350,6 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
                     Upload CSV (Name,Table)
                 </Button>
             )}
-           {/* Download button removed as per request */}
             <input
                 type="file"
                 ref={fileInputRef}
@@ -405,8 +380,3 @@ const SeatingChartDisplay: FC<SeatingChartDisplayProps> = ({ data }) => {
 };
 
 export default SeatingChartDisplay;
-    
-
-    
-
-    
